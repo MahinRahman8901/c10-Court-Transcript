@@ -27,4 +27,8 @@ Our automated data pipeline will:
 
 ### Architecture Diagram 
 
-![Architecture Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
+#### Minimum Viable Product
+![Architecture Basic](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_basic.png?raw=true)
+
+#### Stretch Goals
+![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
