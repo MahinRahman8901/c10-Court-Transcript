@@ -1,7 +1,5 @@
 # Court Transcript Pipeline
 
-# Court Transcript Pipeline
-
 ## Problem Statement:
 The National Archives release transcripts of real court hearings every day in plain text format. However, the sheer volume and format of these transcripts make them challenging for the average person to consume and analyse effectively. Key questions about court proceedings, such as judge behaviour and case outcomes, remain unanswered due to limited accessibility and resources. Additionally, the decline in journalism leads to the lack of public understanding of court judgments. 
 
