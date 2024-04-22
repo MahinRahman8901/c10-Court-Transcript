@@ -22,3 +22,9 @@ Our automated data pipeline will:
 ## Planned Outputs:
 - Deployed pipeline for automated transcript processing.
 - Deployed dashboard website for user-friendly access to analysed court data.
+
+## Diagrams
+
+### Architecture Diagram 
+
+![Architecture Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
