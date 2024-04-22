@@ -66,3 +66,8 @@ if __name__ == "__main__":
         combined_urls = combine_case_url(case_urls)
         if i > 5:
             break
+
+"""This script is responsible for extracting court transcript data"""
+
+if __name__ == "__main__":
+    pass

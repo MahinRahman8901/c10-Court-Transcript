@@ -1,0 +1,35 @@
+name: Python Code Quality and Testing
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches: 
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  lint-and-test:
+    name: Linting and Testing
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install Dependencies from All Requirements Files
+        run: |
+          find . -name 'requirements.txt' -exec pip install --no-cache-dir -r {} \;
+          pip install pytest pylint
+        
+      - name: Run Pylint
+        run: find . -name "*.py" -exec pylint --fail-under=8 {} +
+        
+      - name: Run Pytest
+        run: pytest
