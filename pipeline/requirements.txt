@@ -1,2 +1,5 @@
 pytest
 pylint
+bs4
+requests
+python-dotenv
