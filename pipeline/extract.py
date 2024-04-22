@@ -3,16 +3,16 @@
 from os import environ as ENV
 
 from time import sleep
+import logging
 from dotenv import load_dotenv
 
 import requests
-import logging
 from bs4 import BeautifulSoup
 
 
 def get_index_to_infinity():
     """Get index to infinity"""
-    index = 0
+    index = 1
     while True:
         yield index
         index += 1
@@ -60,9 +60,47 @@ def combine_case_url(url_list: list[str]) -> list[str]:
     return []
 
 
-def get_case_pdf_url(case_url: str) -> str:
+def get_case_pdf_url(web_url: str) -> str:
     """Return the url for downloading the pdf transcript of a case"""
-    return
+    try:
+        response = requests.get(web_url, timeout=10)
+
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        pdf_container = soup.find(
+            'div', class_='judgment-toolbar__buttons judgment-toolbar-buttons')
+
+        pdf_url_anchor = pdf_container.find(
+            'a', class_='judgment-toolbar-buttons__option--pdf btn')
+
+        pdf_url = pdf_url_anchor['href']
+
+        return pdf_url
+    except requests.RequestException as error:
+        logging.info(f"Error fetching URL: {error}")
+        return ''
+
+
+def get_case_title(web_url: str) -> str:
+    """Return the title of an accessed case"""
+    try:
+        response = requests.get(web_url, timeout=10)
+
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        title_container = soup.find(
+            'h1', class_='judgment-toolbar__title')
+
+        title = title_container.text
+
+        return title
+    except requests.RequestException as error:
+        logging.info(f"Error fetching URL: {error}")
+        return ''
 
 
 if __name__ == "__main__":
@@ -76,7 +114,13 @@ if __name__ == "__main__":
         case_url_list = scrape_law_case_urls(url)
 
         combined_urls = combine_case_url(case_url_list)
-        print(combined_urls)
+
+        extracted_cases = []
+
+        for case_url in combined_urls:
+            case_title = get_case_title(case_url)
+            pdf_url = get_case_pdf_url(case_url)
+            extracted_cases.append({"title": case_title, "pdf": pdf_url})
         sleep(1)
-        if i >= 2:
+        if i >= 1:
             break
