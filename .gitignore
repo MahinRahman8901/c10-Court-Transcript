@@ -1,0 +1,18 @@
+# environment
+.env
+venv/
+
+# terraform
+.terraform
+*.tfvars
+*.tfstate
+*.lock.hcl
+*tfstate.backup
+
+#data
+data/
+
+# testing
+.pytest_cache
+__pycache__
+/coverage
