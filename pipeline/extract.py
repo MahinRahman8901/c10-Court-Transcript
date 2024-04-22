@@ -2,16 +2,12 @@
 
 from os import environ as ENV
 
+from time import sleep
 from dotenv import load_dotenv
 
 import requests
-from bs4 import BeautifulSoup
 import logging
-from time import sleep
-
-# TODO: work on just one court for now - pass in filter variable for grabbing urls
-# TODO: use gpt to get verdict in one word
-# TODO: parse the pdf of each case rather than the html
+from bs4 import BeautifulSoup
 
 
 def get_index_to_infinity():
@@ -22,10 +18,10 @@ def get_index_to_infinity():
         index += 1
 
 
-def scrape_law_case_urls(url: str) -> list[str]:
+def scrape_law_case_urls(web_url: str) -> list[str]:
     """Get the url for each case on the courts webpage"""
     try:
-        response = requests.get(url)
+        response = requests.get(web_url, timeout=10)
 
         response.raise_for_status()
 
@@ -45,8 +41,8 @@ def scrape_law_case_urls(url: str) -> list[str]:
                 case_urls.append(link['href'])
 
         return case_urls
-    except requests.RequestException as e:
-        logging.info(f"Error fetching URL: {e}")
+    except requests.RequestException as error:
+        logging.info(f"Error fetching URL: {error}")
         return []
 
 
@@ -60,14 +56,13 @@ def combine_case_url(url_list: list[str]) -> list[str]:
             full_case_link = f"{ENV['BASE_URL']}/{url}"
             case_urls.append(full_case_link)
         return case_urls
-    else:
-        logging.info("No case law items found.")
-        return []
+    logging.info("No case law items found.")
+    return []
 
 
 def get_case_pdf_url(case_url: str) -> str:
     """Return the url for downloading the pdf transcript of a case"""
-    ...
+    return
 
 
 if __name__ == "__main__":
@@ -78,9 +73,9 @@ if __name__ == "__main__":
         query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
         url = f"{ENV['BASE_URL']}/{query_extension}"
 
-        case_urls = scrape_law_case_urls(url)
+        case_url_list = scrape_law_case_urls(url)
 
-        combined_urls = combine_case_url(case_urls)
+        combined_urls = combine_case_url(case_url_list)
         print(combined_urls)
         sleep(1)
         if i >= 2:
