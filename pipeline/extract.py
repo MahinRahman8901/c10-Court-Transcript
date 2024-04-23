@@ -117,9 +117,9 @@ def download_pdfs(url_data: list[dict]) -> None:
 
 
 def parse_pdf(case: dict):
-    print(case["title"])
     reader = PdfReader(case['filepath'])
     first_page = reader.pages[0].extract_text()
+    second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
     judge = re.search(r"(?<=Before :\n)([A-Z].*)", first_page)
     if not judge:
@@ -129,6 +129,12 @@ def parse_pdf(case: dict):
 
     case["case_no"] = re.search(
         r"(?<=Case No: )([A-Z, -].*)", first_page).group(1)
+
+    case["date"] = re.search(r"(?<=Date: )([0-9].*)", first_page).group(1)
+
+    case["introduction"] = second_page
+
+    case["conclusion"] = last_page
 
 
 if __name__ == "__main__":
