@@ -1,10 +1,10 @@
 CREATE TABLE "judges"(
     "judge_id" SMALLINT NOT NULL,
     "name" TEXT NOT NULL,
-    "appointed" DATE NOT NULL,
-    "circuit_id" SMALLINT NULL,
+    "appointed" DATE,
+    "circuit_id" SMALLINT,
     "judge_type_id" BIGINT NOT NULL,
-    "gender" VARCHAR(1) NOT NULL
+    "gender" VARCHAR(1)
 );
 ALTER TABLE
     "judges" ADD PRIMARY KEY("judge_id");
