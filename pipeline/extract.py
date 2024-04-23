@@ -1,6 +1,7 @@
 """Python script responsible for extracting court transcript data using web scraping"""
 
 from os import makedirs, path, environ as ENV
+import re
 
 from time import sleep
 import logging
@@ -8,6 +9,7 @@ from dotenv import load_dotenv
 
 import requests
 from bs4 import BeautifulSoup
+from pypdf import PdfReader
 
 
 def get_index_to_infinity():
@@ -108,9 +110,25 @@ def download_pdfs(url_data: list[dict]) -> None:
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
     for pdf in url_data:
+        pdf["filepath"] = f"{ENV['STORAGE_FOLDER']}/{pdf['title']}.pdf"
         response = requests.get(pdf["pdf"])
-        with open(f"{ENV['STORAGE_FOLDER']}/{pdf['title']}.pdf", "wb") as f:
+        with open(f"{pdf['filepath']}", "wb") as f:
             f.write(response.content)
+
+
+def parse_pdf(case: dict):
+    print(case["title"])
+    reader = PdfReader(case['filepath'])
+    first_page = reader.pages[0].extract_text()
+    last_page = reader.pages[-1].extract_text()
+    judge = re.search(r"(?<=Before :\n)([A-Z].*)", first_page)
+    if not judge:
+        judge = re.search(r"(?<=Before  : \n \n)([A-Z].*)", first_page)
+    judge = judge.group(1)
+    case["judge"] = judge
+
+    case["case_no"] = re.search(
+        r"(?<=Case No: )([A-Z, -].*)", first_page).group(1)
 
 
 if __name__ == "__main__":
@@ -134,5 +152,7 @@ if __name__ == "__main__":
         sleep(1)
         print(extracted_cases)
         download_pdfs(extracted_cases)
+        for case_data in extracted_cases:
+            parse_pdf(case_data)
         if i >= 1:
             break
