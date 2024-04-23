@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 import requests
 from bs4 import BeautifulSoup
+import pandas as pd
 from pypdf import PdfReader
 
 
@@ -139,6 +140,13 @@ def parse_pdf(court_case: dict):
     court_case["conclusion"] = last_page
 
 
+def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
+    cases = pd.DataFrame(court_cases)
+    cases = cases.drop(columns=["pdf", "filepath"])
+
+    return cases
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -162,6 +170,7 @@ if __name__ == "__main__":
         for case_data in extracted_cases:
             download_pdfs(case_data)
             parse_pdf(case_data)
+        create_dataframe(extracted_cases)
 
         if i >= 1:
             break
