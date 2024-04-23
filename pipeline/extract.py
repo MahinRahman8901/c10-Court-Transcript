@@ -106,6 +106,7 @@ def get_case_title(web_url: str) -> str:
 
 
 def download_pdfs(court_case: dict) -> None:
+    """Downloads a pdf from the link given in the court_case dict"""
     if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
@@ -116,6 +117,7 @@ def download_pdfs(court_case: dict) -> None:
 
 
 def parse_pdf(court_case: dict):
+    """Extracts judge name, case number, date, introduction, and conclusion from pdf"""
     reader = PdfReader(court_case['filepath'])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
@@ -124,7 +126,7 @@ def parse_pdf(court_case: dict):
     if not judge:
         judge = re.search(r"(?<=Before  : \n \n)([A-Z].*)", first_page)
     judge = judge.group(1)
-    court_case["judge"] = judge
+    court_case["judge_name"] = judge
 
     court_case["case_no"] = re.search(
         r"(?<=Case No: )([A-Z, -].*)", first_page).group(1)
@@ -160,5 +162,6 @@ if __name__ == "__main__":
         for case_data in extracted_cases:
             download_pdfs(case_data)
             parse_pdf(case_data)
+
         if i >= 1:
             break
