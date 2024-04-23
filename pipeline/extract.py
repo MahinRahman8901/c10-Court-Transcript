@@ -1,6 +1,6 @@
 """Python script responsible for extracting court transcript data using web scraping"""
 
-from os import environ as ENV
+from os import makedirs, path, environ as ENV
 
 from time import sleep
 import logging
@@ -103,6 +103,16 @@ def get_case_title(web_url: str) -> str:
         return ''
 
 
+def download_pdfs(url_data: list[dict]) -> None:
+    if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
+        makedirs(f"{ENV['STORAGE_FOLDER']}/")
+
+    for pdf in url_data:
+        response = requests.get(pdf["pdf"])
+        with open(f"{ENV['STORAGE_FOLDER']}/{pdf['title']}.pdf", "wb") as f:
+            f.write(response.content)
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -122,5 +132,7 @@ if __name__ == "__main__":
             pdf_url = get_case_pdf_url(case_url)
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
         sleep(1)
+        print(extracted_cases)
+        download_pdfs(extracted_cases)
         if i >= 1:
             break
