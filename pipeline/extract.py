@@ -1,4 +1,4 @@
-"""Python script responsible for extracting court transcript data using web scraping"""
+"""Python script responsible for extracting court transcript data using web scraping."""
 
 from os import makedirs, path, environ as ENV
 import re
@@ -14,7 +14,7 @@ from pypdf import PdfReader
 
 
 def get_index_to_infinity():
-    """Get index to infinity"""
+    """Get index to infinity."""
     index = 1
     while True:
         yield index
@@ -22,7 +22,7 @@ def get_index_to_infinity():
 
 
 def scrape_law_case_urls(web_url: str) -> list[str]:
-    """Get the url for each case on the courts webpage"""
+    """Get the url for each case on the courts webpage."""
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -50,7 +50,7 @@ def scrape_law_case_urls(web_url: str) -> list[str]:
 
 
 def combine_case_url(url_list: list[str]) -> list[str]:
-    """Return the combined url of case with url of webpage"""
+    """Return the combined url of case with url of webpage."""
 
     if url_list:
         case_urls = []
@@ -64,7 +64,7 @@ def combine_case_url(url_list: list[str]) -> list[str]:
 
 
 def get_case_pdf_url(web_url: str) -> str:
-    """Return the url for downloading the pdf transcript of a case"""
+    """Return the url for downloading the pdf transcript of a case."""
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -87,7 +87,7 @@ def get_case_pdf_url(web_url: str) -> str:
 
 
 def get_case_title(web_url: str) -> str:
-    """Return the title of an accessed case"""
+    """Return the title of an accessed case."""
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -107,7 +107,7 @@ def get_case_title(web_url: str) -> str:
 
 
 def download_pdfs(court_case: dict) -> None:
-    """Downloads a pdf from the link given in the court_case dict"""
+    """Downloads a pdf from the link given in the court_case dict."""
     if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
@@ -118,7 +118,7 @@ def download_pdfs(court_case: dict) -> None:
 
 
 def parse_pdf(court_case: dict):
-    """Extracts judge name, case number, date, introduction, and conclusion from pdf"""
+    """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
     reader = PdfReader(court_case['filepath'])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
@@ -141,6 +141,7 @@ def parse_pdf(court_case: dict):
 
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
+    """Given a list of court cases, creates and returns a pandas dataframe."""
     cases = pd.DataFrame(court_cases)
     cases = cases.drop(columns=["pdf", "filepath"])
 
@@ -167,10 +168,12 @@ if __name__ == "__main__":
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
         sleep(1)
         print(extracted_cases)
+
         for case_data in extracted_cases:
             download_pdfs(case_data)
             parse_pdf(case_data)
-        create_dataframe(extracted_cases)
+
+        df = create_dataframe(extracted_cases)
 
         if i >= 1:
             break
