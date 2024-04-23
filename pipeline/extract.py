@@ -105,19 +105,18 @@ def get_case_title(web_url: str) -> str:
         return ''
 
 
-def download_pdfs(url_data: list[dict]) -> None:
+def download_pdfs(court_case: dict) -> None:
     if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
-    for pdf in url_data:
-        pdf["filepath"] = f"{ENV['STORAGE_FOLDER']}/{pdf['title']}.pdf"
-        response = requests.get(pdf["pdf"])
-        with open(f"{pdf['filepath']}", "wb") as f:
-            f.write(response.content)
+    court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
+    response = requests.get(court_case["pdf"])
+    with open(f"{court_case['filepath']}", "wb") as f:
+        f.write(response.content)
 
 
-def parse_pdf(case: dict):
-    reader = PdfReader(case['filepath'])
+def parse_pdf(court_case: dict):
+    reader = PdfReader(court_case['filepath'])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
@@ -125,16 +124,17 @@ def parse_pdf(case: dict):
     if not judge:
         judge = re.search(r"(?<=Before  : \n \n)([A-Z].*)", first_page)
     judge = judge.group(1)
-    case["judge"] = judge
+    court_case["judge"] = judge
 
-    case["case_no"] = re.search(
+    court_case["case_no"] = re.search(
         r"(?<=Case No: )([A-Z, -].*)", first_page).group(1)
 
-    case["date"] = re.search(r"(?<=Date: )([0-9].*)", first_page).group(1)
+    court_case["date"] = re.search(
+        r"(?<=Date: )([0-9].*)", first_page).group(1)
 
-    case["introduction"] = second_page
+    court_case["introduction"] = second_page
 
-    case["conclusion"] = last_page
+    court_case["conclusion"] = last_page
 
 
 if __name__ == "__main__":
@@ -157,8 +157,8 @@ if __name__ == "__main__":
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
         sleep(1)
         print(extracted_cases)
-        download_pdfs(extracted_cases)
         for case_data in extracted_cases:
+            download_pdfs(case_data)
             parse_pdf(case_data)
         if i >= 1:
             break
