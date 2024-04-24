@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from psycopg2 import connect
+from psycopg2 import connect, sql
 from psycopg2.extras import RealDictCursor
 
 
@@ -87,8 +87,8 @@ def convert_date(datestr: str) -> datetime:
 
 
 def extract_name(judge: str, title: str) -> str:
-    """Strips away any prefix and suffix.
-    Returns a name."""
+    """Strips away any prefix and suffix; extracts gender from prefix.
+    Returns a name and a gender."""
 
     if title in judge:
         prefix, name = judge.split(f" {title} ")
@@ -136,23 +136,35 @@ def transform_df(df: pd.DataFrame,
     return df
 
 
-def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DateOffset:
+def concat_dfs(dfs: list[pd.DataFrame]) -> list:
     """Concatenates pd.DFs.
     Returns one single pd.DF"""
 
-    return pd.concat(dfs, ignore_index=True).to
+    return pd.concat(dfs, ignore_index=True).to_records(index=False)
 
 
 # ========== FUNCTIONS: DATABASE ==========
-# def get_db_connection(config) -> connect:
-#     """Returns db connection."""
+def get_db_connection(config) -> connect:
+    """Returns db connection."""
 
-#     return connect(dbname=config["DB_NAME"],
-#                    user=config["DB_USER"],
-#                    password=config["DB_PASSWORD"],
-#                    host=config["DB_HOST"],
-#                    port=config["DB_PORT"],
-#                    cursor_factory=RealDictCursor)
+    return connect(dbname=config["DB_NAME"],
+                   user=config["DB_USER"],
+                   password=config["DB_PASSWORD"],
+                   host=config["DB_HOST"],
+                   port=config["DB_PORT"],
+                   cursor_factory=RealDictCursor)
+
+
+def get_db_table(conn: connect, table: str) -> pd.DataFrame:
+    """Returns table 'circuit' from database as pd.DF."""
+
+    with conn.cursor() as cur:
+        query = sql.SQL(
+            """SELECT * FROM {};""").format(sql.Identifier(table))
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return pd.DataFrame(rows)
 
 
 # def upload_data(conn: connect, df: pd.DataFrame) -> None:
@@ -178,7 +190,7 @@ def main():
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
     load_dotenv()
-    # conn = get_db_connection(ENV)
+    conn = get_db_connection(ENV)
 
     logger.info("=========== SCRAPING ==========")
 
@@ -202,6 +214,9 @@ def main():
     judges = concat_dfs([kings_bench, circuit_judges])
 
     logger.info("=========== LOADING ==========")
+    circuit = get_db_table(conn, "circuit")
+    judge_type = get_db_table(conn, "judge_type")
+    print(judge_type)
 
 
 if __name__ == "__main__":
