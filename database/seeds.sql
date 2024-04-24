@@ -1,5 +1,5 @@
 INSERT INTO judge_type
-    ("type_name")
+    ("name")
 VALUES
     ('Supreme Court Judge'),
     ('High Court King’s Bench Division'),

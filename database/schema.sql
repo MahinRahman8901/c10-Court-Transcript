@@ -19,7 +19,7 @@ ALTER TABLE
     "judge" ADD PRIMARY KEY("judge_id");
 CREATE TABLE "judge_type"(
     "judge_type_id" SMALLINT NOT NULL GENERATED ALWAYS AS IDENTITY,
-    "type_name" VARCHAR(100) NOT NULL
+    "name" VARCHAR(100) NOT NULL
 );
 ALTER TABLE
     "judge_type" ADD PRIMARY KEY("judge_type_id");
