@@ -17,7 +17,7 @@ CIRCUIT_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciar
 
 
 # ========== FUNCTIONS: SCRAPING ==========
-def scrape_high_court_kings_bench(url: str) -> pd.DataFrame:
+def scrape_kings_bench(url: str) -> pd.DataFrame:
     """Get data from a list of judges with a URL"""
 
     try:
@@ -183,7 +183,7 @@ def main():
     logger.info("=========== SCRAPING ==========")
 
     logger.info("===== scraping HCKB... =====")
-    kings_bench = scrape_high_court_kings_bench(KINGS_BENCH_URL)
+    kings_bench = scrape_kings_bench(KINGS_BENCH_URL)
 
     logger.info("===== scraping CJ... =====")
     circuit_judges = scrape_circuit_judges(CIRCUIT_URL)
