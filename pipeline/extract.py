@@ -100,7 +100,7 @@ def get_case_title(web_url: str) -> str:
 
         title = title_container.text
 
-        return title
+        return title.replace("/", "-")
     except requests.RequestException as error:
         logging.info(f"Error fetching URL: {error}")
         return ''
@@ -123,21 +123,42 @@ def parse_pdf(court_case: dict):
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
-    judge = re.search(r"(?<=Before :\n)([A-Z].*)", first_page)
-    if not judge:
-        judge = re.search(r"(?<=Before  : \n \n)([A-Z].*)", first_page)
-    judge = judge.group(1)
-    court_case["judge_name"] = judge
 
-    court_case["case_no"] = re.search(
-        r"(?<=Case No: )([A-Z, -].*)", first_page).group(1)
+    try:
+        judge = re.search(r"(?<=Before :\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before  : \n \n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before : \n \n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before:\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=BEFORE:\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(THE HONOURABLE.*)", first_page)
 
-    court_case["date"] = re.search(
-        r"(?<=Date: )([0-9].*)", first_page).group(1)
+        court_case["judge_name"] = judge.group(1).strip()
 
-    court_case["introduction"] = second_page
+        case_no = re.search(
+            r"(CL.*)", first_page)
+        if not case_no:
+            case_no = re.search(
+                r"(LM.*)", first_page)
+        court_case["case_no"] = case_no.group(1).strip()
 
-    court_case["conclusion"] = last_page
+        court_date = re.search(
+            r"(?<=Date: )(.*)", first_page)
+        if not court_date:
+            court_date = re.search(
+                r"(.* [0-9]* \w* [0-9]*)", first_page)
+
+        court_case["date"] = court_date.group(1).strip()
+
+        court_case["introduction"] = second_page
+
+        court_case["conclusion"] = last_page
+    except:
+        court_case.clear()
 
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
@@ -168,12 +189,13 @@ def extract_cases(pages: int) -> pd.DataFrame:
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
-
+    j = 0
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
 
-    print(extracted_cases)
+    extracted_cases = list(filter(None, extracted_cases))
+
     df = create_dataframe(extracted_cases)
 
     return df
@@ -181,33 +203,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    load_dotenv()
-
-    # for i in get_index_to_infinity():
-    #     query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
-    #     url = f"{ENV['BASE_URL']}/{query_extension}"
-
-    #     case_url_list = scrape_law_case_urls(url)
-
-    #     combined_urls = combine_case_url(case_url_list)
-
-    #     extracted_cases = []
-
-    #     for case_url in combined_urls:
-    #         case_title = get_case_title(case_url)
-    #         pdf_url = get_case_pdf_url(case_url)
-    #         extracted_cases.append({"title": case_title, "pdf": pdf_url})
-    #     sleep(1)
-    #     print(extracted_cases)
-
-    #     for case_data in extracted_cases:
-    #         download_pdfs(case_data)
-    #         parse_pdf(case_data)
-
-    #     df = create_dataframe(extracted_cases)
-
-    #     if i >= 1:
-    #         break
-
-    df = extract_cases(1)
-    print(df)
+    df = extract_cases(5)
+    print(df[["judge_name", "case_no"]])

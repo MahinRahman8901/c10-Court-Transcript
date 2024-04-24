@@ -2,6 +2,7 @@
 .env
 venv/
 .venv
+*.DS_Store
 
 # terraform
 .terraform
@@ -9,6 +10,9 @@ venv/
 *.tfstate
 *.lock.hcl
 *tfstate.backup
+
+# exploring
+explore.ipynb
 
 #data
 data/
