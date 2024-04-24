@@ -11,6 +11,9 @@ venv/
 *.lock.hcl
 *tfstate.backup
 
+# exploring
+explore.ipynb
+
 #data
 data/
 
