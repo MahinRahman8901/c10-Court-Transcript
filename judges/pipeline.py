@@ -12,8 +12,8 @@ from psycopg2.extras import RealDictCursor
 
 
 # ========== GLOBALS ==========
-HCKB_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
-CJ_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
+KINGS_BENCH_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
+CIRCUIT_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
 
 
 # ========== FUNCTIONS: SCRAPING ==========
@@ -183,21 +183,23 @@ def main():
     logger.info("=========== SCRAPING ==========")
 
     logger.info("===== scraping HCKB... =====")
-    HCKB = scrape_high_court_kings_bench(HCKB_URL)
+    kings_bench = scrape_high_court_kings_bench(KINGS_BENCH_URL)
 
     logger.info("===== scraping CJ... =====")
-    CJ = scrape_circuit_judges(CJ_URL)
+    circuit_judges = scrape_circuit_judges(CIRCUIT_URL)
 
     logger.info("=========== TRANSFORMING ==========")
 
     logger.info("===== transforming HCKB... =====")
-    HCKB = transform_df(HCKB, "Justice", "High Court King’s Bench Division")
+    kings_bench = transform_df(
+        kings_bench, "Justice", "High Court King’s Bench Division")
 
     logger.info("===== transforming CJ... =====")
-    CJ = transform_df(CJ, "Honour Judge", "Circuit Judge")
+    circuit_judges = transform_df(
+        circuit_judges, "Honour Judge", "Circuit Judge")
 
     logger.info("===== concatenating DFs... =====")
-    judges = concat_dfs([HCKB, CJ])
+    judges = concat_dfs([kings_bench, circuit_judges])
 
     logger.info("=========== LOADING ==========")
 
