@@ -123,6 +123,7 @@ def parse_pdf(court_case: dict):
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
+
     try:
         judge = re.search(r"(?<=Before :\n)(.*)", first_page)
         if not judge:
@@ -157,7 +158,7 @@ def parse_pdf(court_case: dict):
 
         court_case["conclusion"] = last_page
     except:
-        court_case = {}
+        court_case.clear()
 
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
@@ -192,12 +193,9 @@ def extract_cases(pages: int) -> pd.DataFrame:
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
-        if not extracted_cases[j]:
-            extracted_cases.pop(j)
-        else:
-            j += 1
 
-    print(extracted_cases)
+    extracted_cases = list(filter(None, extracted_cases))
+
     df = create_dataframe(extracted_cases)
 
     return df
@@ -206,4 +204,4 @@ def extract_cases(pages: int) -> pd.DataFrame:
 if __name__ == "__main__":
 
     df = extract_cases(5)
-    print(df["judge_name"])
+    print(df[["judge_name", "case_no"]])
