@@ -120,7 +120,6 @@ def download_pdfs(court_case: dict) -> None:
 def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
     reader = PdfReader(court_case['filepath'])
-    print(court_case["title"])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
@@ -151,7 +150,7 @@ def parse_pdf(court_case: dict):
         if not court_date:
             court_date = re.search(
                 r"(.* [0-9]* \w* [0-9]*)", first_page)
-            print(court_date.group(1))
+
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
