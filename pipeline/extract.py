@@ -150,7 +150,32 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
 
 def extract_cases(pages: int) -> pd.DataFrame:
     """Given a number of pages, will return a DataFrame of all the cases from these pages."""
-    pass
+    load_dotenv()
+
+    extracted_cases = []
+
+    for i in range(1, pages):
+        query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
+        url = f"{ENV['BASE_URL']}/{query_extension}"
+
+        case_url_list = scrape_law_case_urls(url)
+
+        combined_urls = combine_case_url(case_url_list)
+
+        for case_url in combined_urls:
+            case_title = get_case_title(case_url)
+            pdf_url = get_case_pdf_url(case_url)
+            extracted_cases.append({"title": case_title, "pdf": pdf_url})
+
+        sleep(1)
+
+    for case_data in extracted_cases:
+        download_pdfs(case_data)
+        parse_pdf(case_data)
+
+    df = create_dataframe(extracted_cases)
+
+    return df
 
 
 if __name__ == "__main__":
