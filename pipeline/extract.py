@@ -100,7 +100,7 @@ def get_case_title(web_url: str) -> str:
 
         title = title_container.text
 
-        return title
+        return title.replace("/", "-")
     except requests.RequestException as error:
         logging.info(f"Error fetching URL: {error}")
         return ''
