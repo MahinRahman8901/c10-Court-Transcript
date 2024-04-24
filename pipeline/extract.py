@@ -148,6 +148,11 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     return cases
 
 
+def extract_cases(pages: int) -> pd.DataFrame:
+    """Given a number of pages, will return a DataFrame of all the cases from these pages."""
+    pass
+
+
 if __name__ == "__main__":
 
     load_dotenv()
