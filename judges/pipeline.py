@@ -144,38 +144,35 @@ def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DateOffset:
 
 
 # ========== FUNCTIONS: DATABASE ==========
-def get_db_connection(config) -> connect:
-    """Returns db connection."""
+# def get_db_connection(config) -> connect:
+#     """Returns db connection."""
 
-    return connect(dbname=config["DB_NAME"],
-                   user=config["DB_USER"],
-                   password=config["DB_PASSWORD"],
-                   host=config["DB_HOST"],
-                   port=config["DB_PORT"],
-                   cursor_factory=RealDictCursor)
+#     return connect(dbname=config["DB_NAME"],
+#                    user=config["DB_USER"],
+#                    password=config["DB_PASSWORD"],
+#                    host=config["DB_HOST"],
+#                    port=config["DB_PORT"],
+#                    cursor_factory=RealDictCursor)
 
 
-def upload_data(conn: connect, df: pd.DataFrame) -> None:
-    """Insert judge data into judge table in db."""
+# def upload_data(conn: connect, df: pd.DataFrame) -> None:
+#     """Insert judge data into judge table in db."""
 
-    with conn.cursor() as cur:
-        query = """
-                INSERT INTO judges
-                    (name, gender, appointed, judge_type_id, circuit_id)
-                VALUES
-                    (%s, %s, %s)
-                """
-        cur.executemany(query,
-                        [df["at"], df["site"], df["val"]])
-    conn.commit()
+#     with conn.cursor() as cur:
+#         query = """
+#                 INSERT INTO judges
+#                     (name, gender, appointed, judge_type_id, circuit_id)
+#                 VALUES
+#                     (%s, %s, %s)
+#                 """
+#         cur.executemany(query,
+#                         [df["at"], df["site"], df["val"]])
+#     conn.commit()
 
 
 # ========== MAIN ==========
 def main():
     """Encapsulates all functions to run in main."""
-
-    HCKB_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
-    CJ_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
@@ -183,26 +180,26 @@ def main():
     load_dotenv()
     # conn = get_db_connection(ENV)
 
-    logging.info("=========== SCRAPING ==========")
+    logger.info("=========== SCRAPING ==========")
 
-    logging.info("===== scraping HCKB... =====")
+    logger.info("===== scraping HCKB... =====")
     HCKB = scrape_high_court_kings_bench(HCKB_URL)
 
-    logging.info("===== scraping CJ... =====")
+    logger.info("===== scraping CJ... =====")
     CJ = scrape_circuit_judges(CJ_URL)
 
-    logging.info("=========== TRANSFORMING ==========")
+    logger.info("=========== TRANSFORMING ==========")
 
-    logging.info("===== transforming HCKB... =====")
+    logger.info("===== transforming HCKB... =====")
     HCKB = transform_df(HCKB, "Justice", "High Court King’s Bench Division")
 
-    logging.info("===== transforming CJ... =====")
+    logger.info("===== transforming CJ... =====")
     CJ = transform_df(CJ, "Honour Judge", "Circuit Judge")
 
-    logging.info("===== concatenating DFs... =====")
+    logger.info("===== concatenating DFs... =====")
     judges = concat_dfs([HCKB, CJ])
 
-    logging.info("=========== LOADING ==========")
+    logger.info("=========== LOADING ==========")
 
 
 if __name__ == "__main__":
