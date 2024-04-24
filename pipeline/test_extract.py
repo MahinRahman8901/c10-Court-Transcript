@@ -1,5 +1,11 @@
 """This script test functions in the extract.py file"""
+from os import environ as ENV
+
 from extract import create_dataframe, combine_case_url
+
+"""
+Testing create_dataframe
+"""
 
 
 def test_create_dataframe_drops_columns():
@@ -15,9 +21,20 @@ def test_create_dataframe_returns_correct_num_items():
     assert len(df) == 2
 
 
-def test_passing_for_workflow():
-    """
-    Passing test for workflow to run
-    """
+"""
+Testing combine_case_url
+"""
 
-    pass
+
+def test_combine_case_url_returns_list():
+    ENV['BASE_URL'] = "real.url"
+    urls = ["fizz", "buzz", "foo", "bar"]
+    case_urls = combine_case_url(urls)
+    assert isinstance(case_urls, list)
+
+
+def test_combine_case_url_returns_correct_url():
+    ENV['BASE_URL'] = "real.url"
+    urls = ["fizz"]
+    case_urls = combine_case_url(urls)
+    assert case_urls[0] == "real.url/fizz"
