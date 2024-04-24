@@ -1,8 +1,10 @@
 '''Cleans the date and name columns of a given dataframe so that the dates are in the format dd/mm/yyyy 
 and the names are stripped of their titles.'''
 
-import pandas as pd
 import re
+
+import pandas as pd
+
 from extract import extract_cases
 
 
