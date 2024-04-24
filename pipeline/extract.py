@@ -189,7 +189,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
-    j = 0
+
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
