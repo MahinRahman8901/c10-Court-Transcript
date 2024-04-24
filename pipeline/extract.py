@@ -124,38 +124,41 @@ def parse_pdf(court_case: dict):
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
-    judge = re.search(r"(?<=Before :\n)(.*)", first_page)
-    if not judge:
-        judge = re.search(r"(?<=Before  : \n \n)(.*)", first_page)
-    if not judge:
-        judge = re.search(r"(?<=Before : \n \n)(.*)", first_page)
-    if not judge:
-        judge = re.search(r"(?<=Before:\n)(.*)", first_page)
-    if not judge:
-        judge = re.search(r"(?<=BEFORE:\n)(.*)", first_page)
-    if not judge:
-        judge = re.search(r"(THE HONOURABLE.*)", first_page)
+    try:
+        judge = re.search(r"(?<=Before :\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before  : \n \n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before : \n \n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=Before:\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(?<=BEFORE:\n)(.*)", first_page)
+        if not judge:
+            judge = re.search(r"(THE HONOURABLE.*)", first_page)
 
-    court_case["judge_name"] = judge.group(1).strip()
+        court_case["judge_name"] = judge.group(1).strip()
 
-    case_no = re.search(
-        r"(CL.*)", first_page)
-    if not case_no:
         case_no = re.search(
-            r"(LM.*)", first_page)
-    court_case["case_no"] = case_no.group(1).strip()
+            r"(CL.*)", first_page)
+        if not case_no:
+            case_no = re.search(
+                r"(LM.*)", first_page)
+        court_case["case_no"] = case_no.group(1).strip()
 
-    court_date = re.search(
-        r"(?<=Date: )(.*)", first_page)
-    if not court_date:
         court_date = re.search(
-            r"(.* [0-9]* \w* [0-9]*)", first_page)
-        print(court_date.group(1))
-    court_case["date"] = court_date.group(1).strip()
+            r"(?<=Date: )(.*)", first_page)
+        if not court_date:
+            court_date = re.search(
+                r"(.* [0-9]* \w* [0-9]*)", first_page)
+            print(court_date.group(1))
+        court_case["date"] = court_date.group(1).strip()
 
-    court_case["introduction"] = second_page
+        court_case["introduction"] = second_page
 
-    court_case["conclusion"] = last_page
+        court_case["conclusion"] = last_page
+    except:
+        court_case = {}
 
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
@@ -186,10 +189,14 @@ def extract_cases(pages: int) -> pd.DataFrame:
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
-
+    j = 0
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
+        if not extracted_cases[j]:
+            extracted_cases.pop(j)
+        else:
+            j += 1
 
     print(extracted_cases)
     df = create_dataframe(extracted_cases)
@@ -199,5 +206,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(4)
+    df = extract_cases(5)
     print(df["judge_name"])
