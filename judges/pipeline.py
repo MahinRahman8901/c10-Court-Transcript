@@ -168,6 +168,9 @@ def upload_data(conn: connect, df: pd.DataFrame) -> None:
 # ========== MAIN ==========
 if __name__ == "__main__":
 
+    HCKB_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
+    CJ_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
+
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
@@ -175,9 +178,6 @@ if __name__ == "__main__":
     conn = get_db_connection(ENV)
 
     logging.info("=========== SCRAPING ==========")
-
-    HCKB_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
-    CJ_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
 
     logging.info("===== scraping HCKB... =====")
     HCKB = scrape_HCKB(HCKB_URL)
