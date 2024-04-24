@@ -148,11 +148,13 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     return cases
 
 
-if __name__ == "__main__":
-
+def extract_cases(pages: int) -> pd.DataFrame:
+    """Given a number of pages, will return a DataFrame of all the cases from these pages."""
     load_dotenv()
 
-    for i in get_index_to_infinity():
+    extracted_cases = []
+
+    for i in range(1, pages+1):
         query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
         url = f"{ENV['BASE_URL']}/{query_extension}"
 
@@ -160,20 +162,52 @@ if __name__ == "__main__":
 
         combined_urls = combine_case_url(case_url_list)
 
-        extracted_cases = []
-
         for case_url in combined_urls:
             case_title = get_case_title(case_url)
             pdf_url = get_case_pdf_url(case_url)
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
+
         sleep(1)
-        print(extracted_cases)
 
-        for case_data in extracted_cases:
-            download_pdfs(case_data)
-            parse_pdf(case_data)
+    for case_data in extracted_cases:
+        download_pdfs(case_data)
+        parse_pdf(case_data)
 
-        df = create_dataframe(extracted_cases)
+    print(extracted_cases)
+    df = create_dataframe(extracted_cases)
 
-        if i >= 1:
-            break
+    return df
+
+
+if __name__ == "__main__":
+
+    load_dotenv()
+
+    # for i in get_index_to_infinity():
+    #     query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
+    #     url = f"{ENV['BASE_URL']}/{query_extension}"
+
+    #     case_url_list = scrape_law_case_urls(url)
+
+    #     combined_urls = combine_case_url(case_url_list)
+
+    #     extracted_cases = []
+
+    #     for case_url in combined_urls:
+    #         case_title = get_case_title(case_url)
+    #         pdf_url = get_case_pdf_url(case_url)
+    #         extracted_cases.append({"title": case_title, "pdf": pdf_url})
+    #     sleep(1)
+    #     print(extracted_cases)
+
+    #     for case_data in extracted_cases:
+    #         download_pdfs(case_data)
+    #         parse_pdf(case_data)
+
+    #     df = create_dataframe(extracted_cases)
+
+    #     if i >= 1:
+    #         break
+
+    df = extract_cases(1)
+    print(df)
