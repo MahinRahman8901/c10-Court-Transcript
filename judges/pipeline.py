@@ -140,34 +140,34 @@ def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DateOffset:
     """Concatenates pd.DFs.
     Returns one single pd.DF"""
 
-    return pd.concat(dfs, ignore_index=True)
+    return pd.concat(dfs, ignore_index=True).to
 
 
 # ========== FUNCTIONS: DATABASE ==========
-# def get_db_connection(config) -> connect:
-#     """Returns db connection."""
+def get_db_connection(config) -> connect:
+    """Returns db connection."""
 
-#     return connect(dbname=config["DB_NAME"],
-#                    user=config["DB_USER"],
-#                    password=config["DB_PASSWORD"],
-#                    host=config["DB_HOST"],
-#                    port=config["DB_PORT"],
-#                    cursor_factory=RealDictCursor)
+    return connect(dbname=config["DB_NAME"],
+                   user=config["DB_USER"],
+                   password=config["DB_PASSWORD"],
+                   host=config["DB_HOST"],
+                   port=config["DB_PORT"],
+                   cursor_factory=RealDictCursor)
 
 
-# def upload_data(conn: connect, df: pd.DataFrame) -> None:
-#     """Insert judge data into judge table in db."""
+def upload_data(conn: connect, df: pd.DataFrame) -> None:
+    """Insert judge data into judge table in db."""
 
-#     with conn.cursor() as cur:
-#         query = """
-#                 INSERT INTO judges
-#                     (name, gender, appointed, judge_type_id, circuit_id)
-#                 VALUES
-#                     (%s, %s, %s)
-#                 """
-#         cur.executemany(query,
-#                         [df["at"], df["site"], df["val"]])
-#     conn.commit()
+    with conn.cursor() as cur:
+        query = """
+                INSERT INTO judges
+                    (name, gender, appointed, judge_type_id, circuit_id)
+                VALUES
+                    (%s, %s, %s)
+                """
+        cur.executemany(query,
+                        [df["at"], df["site"], df["val"]])
+    conn.commit()
 
 
 # ========== MAIN ==========
