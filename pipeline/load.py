@@ -4,14 +4,15 @@ from os import environ as ENV
 import logging
 import pandas as pd
 from dotenv import load_dotenv
-from transform import transform_and_apply_gpt
-from extract import extract_cases
-
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 
 
-def get_db_connection(config) -> connect:
+from transform import transform_and_apply_gpt
+from extract import extract_cases
+
+
+def get_db_connection() -> connect:
     """Returns db connection."""
 
     return connect(dbname=ENV["DB_NAME"],
@@ -36,7 +37,7 @@ def get_judge_id(conn: connect, judge_name: str) -> int | None:
     result = cur.fetchone()
     if result:
         return result[0]
-    return
+    return None
 
 
 def add_judge_id_to_dataframe(judge_name: str, cases_df: pd.DataFrame) -> None:
@@ -82,7 +83,7 @@ def load_to_database(cases_df: pd.DataFrame) -> None:
 
     conn = get_db_connection()
 
-    cases_df['judge_id'] = cases['judge_name'].apply(get_judge_id)
+    cases_df['judge_id'] = cases_df['judge_name'].apply(get_judge_id)
 
     upload_cases_data(conn, cases_df)
 
