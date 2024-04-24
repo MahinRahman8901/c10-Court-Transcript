@@ -11,8 +11,13 @@ from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 
 
+# ========== GLOBALS ==========
+KINGS_BENCH_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
+CIRCUIT_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
+
+
 # ========== FUNCTIONS: SCRAPING ==========
-def scrape_HCKB(url: str) -> pd.DataFrame:
+def scrape_kings_bench(url: str) -> pd.DataFrame:
     """Get data from a list of judges with a URL"""
 
     try:
@@ -38,7 +43,7 @@ def scrape_HCKB(url: str) -> pd.DataFrame:
         return pd.DataFrame([])
 
 
-def scrape_CJ(url: str) -> pd.DataFrame:
+def scrape_circuit_judges(url: str) -> pd.DataFrame:
     """Get data from a list of judges with a URL"""
 
     try:
@@ -135,65 +140,69 @@ def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DateOffset:
     """Concatenates pd.DFs.
     Returns one single pd.DF"""
 
-    return pd.concat(dfs, ignore_index=True)
+    return pd.concat(dfs, ignore_index=True).to
 
 
 # ========== FUNCTIONS: DATABASE ==========
-def get_db_connection(config) -> connect:
-    """Returns db connection."""
+# def get_db_connection(config) -> connect:
+#     """Returns db connection."""
 
-    return connect(dbname=config["DB_NAME"],
-                   user=config["DB_USER"],
-                   password=config["DB_PASSWORD"],
-                   host=config["DB_HOST"],
-                   port=config["DB_PORT"],
-                   cursor_factory=RealDictCursor)
+#     return connect(dbname=config["DB_NAME"],
+#                    user=config["DB_USER"],
+#                    password=config["DB_PASSWORD"],
+#                    host=config["DB_HOST"],
+#                    port=config["DB_PORT"],
+#                    cursor_factory=RealDictCursor)
 
 
-def upload_data(conn: connect, df: pd.DataFrame) -> None:
-    """Insert judge data into judge table in db."""
+# def upload_data(conn: connect, df: pd.DataFrame) -> None:
+#     """Insert judge data into judge table in db."""
 
-    with conn.cursor() as cur:
-        query = """
-                INSERT INTO judges
-                    (name, gender, appointed, judge_type_id, circuit_id)
-                VALUES
-                    (%s, %s, %s)
-                """
-        cur.executemany(query,
-                        [df["at"], df["site"], df["val"]])
-    conn.commit()
+#     with conn.cursor() as cur:
+#         query = """
+#                 INSERT INTO judges
+#                     (name, gender, appointed, judge_type_id, circuit_id)
+#                 VALUES
+#                     (%s, %s, %s)
+#                 """
+#         cur.executemany(query,
+#                         [df["at"], df["site"], df["val"]])
+#     conn.commit()
 
 
 # ========== MAIN ==========
-if __name__ == "__main__":
-
-    HCKB_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/senior-judiciary-list/kings-bench-division-judges/"
-    CJ_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/circuit-judge-list/"
+def main():
+    """Encapsulates all functions to run in main."""
 
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
     load_dotenv()
-    conn = get_db_connection(ENV)
+    # conn = get_db_connection(ENV)
 
-    logging.info("=========== SCRAPING ==========")
+    logger.info("=========== SCRAPING ==========")
 
-    logging.info("===== scraping HCKB... =====")
-    HCKB = scrape_HCKB(HCKB_URL)
+    logger.info("===== scraping HCKB... =====")
+    kings_bench = scrape_kings_bench(KINGS_BENCH_URL)
 
-    logging.info("===== scraping CJ... =====")
-    CJ = scrape_CJ(CJ_URL)
+    logger.info("===== scraping CJ... =====")
+    circuit_judges = scrape_circuit_judges(CIRCUIT_URL)
 
-    logging.info("=========== TRANSFORMING ==========")
+    logger.info("=========== TRANSFORMING ==========")
 
-    logging.info("===== transforming HCKB... =====")
-    HCKB = transform_df(HCKB, "Justice", "High Court King’s Bench Division")
+    logger.info("===== transforming HCKB... =====")
+    kings_bench = transform_df(
+        kings_bench, "Justice", "High Court King’s Bench Division")
 
-    logging.info("===== transforming CJ... =====")
-    CJ = transform_df(CJ, "Honour Judge", "Circuit Judge")
+    logger.info("===== transforming CJ... =====")
+    circuit_judges = transform_df(
+        circuit_judges, "Honour Judge", "Circuit Judge")
 
-    logging.info("===== concatenating DFs... =====")
-    judges = concat_dfs([HCKB, CJ])
+    logger.info("===== concatenating DFs... =====")
+    judges = concat_dfs([kings_bench, circuit_judges])
 
-    logging.info("=========== LOADING ==========")
+    logger.info("=========== LOADING ==========")
+
+
+if __name__ == "__main__":
+    main()
