@@ -2,6 +2,7 @@ pytest
 pylint
 bs4
 requests
+requests-mock
 pandas
 python-dotenv
 pypdf
