@@ -156,7 +156,7 @@ def parse_pdf(court_case: dict):
 
         court_case["conclusion"] = last_page
 
-    except Exception as e:
+    except:
         court_case.clear()
 
 
