@@ -15,6 +15,7 @@ from pypdf import PdfReader
 
 def get_index_to_infinity():
     """Get index to infinity."""
+
     index = 1
     while True:
         yield index
@@ -23,6 +24,7 @@ def get_index_to_infinity():
 
 def scrape_law_case_urls(web_url: str) -> list[str]:
     """Get the url for each case on the courts webpage."""
+
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -64,6 +66,8 @@ def combine_case_url(url_list: list[str]) -> list[str]:
 
 
 def get_case_soup(web_url: str) -> BeautifulSoup:
+    """Returns the soup of a webpage."""
+
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -103,6 +107,7 @@ def get_case_title(case_soup: BeautifulSoup) -> str:
 
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
+
     if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
@@ -114,6 +119,7 @@ def download_pdfs(court_case: dict) -> None:
 
 def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
+
     reader = PdfReader(court_case['filepath'])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
@@ -157,6 +163,7 @@ def parse_pdf(court_case: dict):
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     """Given a list of court cases, creates and returns a pandas dataframe."""
+
     cases = pd.DataFrame(court_cases)
     cases = cases.drop(columns=["pdf", "filepath"])
 
@@ -165,6 +172,7 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
 
 def extract_cases(pages: int) -> pd.DataFrame:
     """Given a number of pages, will return a DataFrame of all the cases from these pages."""
+
     load_dotenv()
 
     extracted_cases = []
@@ -199,5 +207,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(1)
+    df = extract_cases(5)
     print(df[["title", "case_no", "date"]])
