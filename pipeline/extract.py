@@ -27,9 +27,11 @@ def get_db_connection() -> connect:
 
 
 def get_stored_titles(conn) -> list:
+    """Returns the list of titles stored in the database"""
+
     with conn.cursor() as cur:
         cur.execute("SELECT title FROM court_case;")
-    result = cur.fetchall()
+        result = cur.fetchall()
 
     return result
 
@@ -196,6 +198,10 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     load_dotenv()
 
+    conn = get_db_connection()
+
+    stored_titles = get_stored_titles(conn)
+
     extracted_cases = []
 
     for i in range(1, pages+1):
@@ -210,8 +216,11 @@ def extract_cases(pages: int) -> pd.DataFrame:
             case_soup = get_case_soup(case_url)
             if case_soup:
                 case_title = get_case_title(case_soup)
-                pdf_url = get_case_pdf_url(case_soup)
-                extracted_cases.append({"title": case_title, "pdf": pdf_url})
+                if case_title not in stored_titles:
+                    pdf_url = get_case_pdf_url(case_soup)
+                    extracted_cases.append(
+                        {"title": case_title, "pdf": pdf_url})
+                    stored_titles.append(case_title)
 
         sleep(1)
 
