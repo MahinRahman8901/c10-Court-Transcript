@@ -26,6 +26,14 @@ def get_db_connection() -> connect:
                    cursor_factory=RealDictCursor)
 
 
+def get_stored_titles(conn) -> list:
+    with conn.cursor() as cur:
+        cur.execute("SELECT title FROM court_case;")
+    result = cur.fetchall()
+
+    return result
+
+
 def get_index_to_infinity():
     """Get index to infinity."""
 
