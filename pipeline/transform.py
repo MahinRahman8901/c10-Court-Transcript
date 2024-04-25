@@ -1,3 +1,4 @@
+'''Script to standardize and clean data as well as extracting summaries and verdicts using GPT.'''
 import re
 import pandas as pd
 
