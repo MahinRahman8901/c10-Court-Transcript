@@ -36,7 +36,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-resource "aws_lambda_function" "ord-lmnh-pipeline-terraform" {
+resource "aws_lambda_function" "court-pipeline-terraform" {
   function_name = "c10-court-pipeline-terraform"
 
   package_type  = "Image"
