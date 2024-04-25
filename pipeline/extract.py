@@ -11,6 +11,29 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from pypdf import PdfReader
+from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
+
+
+def get_db_connection() -> connect:
+    """Returns db connection."""
+
+    return connect(dbname=ENV["DB_NAME"],
+                   user=ENV["DB_USER"],
+                   password=ENV["DB_PASSWORD"],
+                   host=ENV["DB_HOST"],
+                   port=ENV["DB_PORT"],
+                   cursor_factory=RealDictCursor)
+
+
+def get_stored_titles(conn) -> list:
+    """Returns the list of titles stored in the database"""
+
+    with conn.cursor() as cur:
+        cur.execute("SELECT title FROM court_case;")
+        result = cur.fetchall()
+
+    return [row["title"] for row in result]
 
 
 def get_index_to_infinity():
@@ -175,6 +198,10 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     load_dotenv()
 
+    conn = get_db_connection()
+
+    stored_titles = get_stored_titles(conn)
+
     extracted_cases = []
 
     for i in range(1, pages+1):
@@ -189,8 +216,11 @@ def extract_cases(pages: int) -> pd.DataFrame:
             case_soup = get_case_soup(case_url)
             if case_soup:
                 case_title = get_case_title(case_soup)
-                pdf_url = get_case_pdf_url(case_soup)
-                extracted_cases.append({"title": case_title, "pdf": pdf_url})
+                if case_title not in stored_titles:
+                    pdf_url = get_case_pdf_url(case_soup)
+                    extracted_cases.append(
+                        {"title": case_title, "pdf": pdf_url})
+                    stored_titles.append(case_title)
 
         sleep(1)
 
@@ -207,5 +237,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(5)
+    df = extract_cases(1)
     print(df[["title", "case_no", "date"]])
