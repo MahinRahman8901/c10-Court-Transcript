@@ -1,9 +1,58 @@
 """This script test functions in the extract.py file"""
+from os import environ as ENV
+
+from extract import create_dataframe, combine_case_url, get_index_to_infinity
+
+"""
+Testing create_dataframe
+"""
 
 
-def test_passing_for_workflow():
-    """
-    Passing test for workflow to run
-    """
+def test_create_dataframe_drops_columns():
+    """Tests that the correct columns get dropped."""
+    test_dict_list = [{"pdf": "foo", "filepath": "bar", "title": "foobar"}]
+    df = create_dataframe(test_dict_list)
+    assert df.columns.values[0] == "title"
 
-    pass
+
+def test_create_dataframe_returns_correct_num_items():
+    """Tests that it returns the same amount of items you pass in."""
+    test_dict_list = [{"pdf": "foo", "filepath": "bar", "title": "foobar"}, {
+        "pdf": "fizz", "filepath": "buzz", "title": "fizzbuzz"}]
+    df = create_dataframe(test_dict_list)
+    assert len(df) == len(test_dict_list)
+
+
+"""
+Testing combine_case_url
+"""
+
+
+def test_combine_case_url_returns_list():
+    """Tests that a list is returned."""
+    ENV['BASE_URL'] = "real.url"
+    urls = ["fizz", "buzz", "foo", "bar"]
+    case_urls = combine_case_url(urls)
+    assert isinstance(case_urls, list)
+
+
+def test_combine_case_url_returns_correct_url():
+    """Tests that the correct url is formed."""
+    ENV['BASE_URL'] = "real.url"
+    urls = ["fizz"]
+    case_urls = combine_case_url(urls)
+    assert case_urls[0] == "real.url/fizz"
+
+
+"""
+Testing get_index_to_infinity
+"""
+
+
+def test_get_index_to_infinity():
+    """Tests that the generator function yields incrementally by 1."""
+    indexes = get_index_to_infinity()
+    first = next(indexes)
+    second = next(indexes)
+    assert first == 1
+    assert second == 2
