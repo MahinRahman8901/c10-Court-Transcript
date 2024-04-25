@@ -142,6 +142,8 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
     AI = OpenAI(api_key=ENV["OPENAI_API_KEY"])
 
+    clean_data(cases)
+
     cases['verdict'] = cases['conclusion'].apply(
         get_case_verdict, args=(AI,))
 
@@ -156,7 +158,6 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 if __name__ == "__main__":
 
     cases = extract_cases(5)
-    clean_data(cases)
 
     transformed_cases = transform_and_apply_gpt(cases)
 

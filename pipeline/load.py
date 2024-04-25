@@ -46,33 +46,18 @@ def add_judge_id_to_dataframe(judge_name: str, cases_df: pd.DataFrame) -> None:
     cases_df["judge_id"] = judge_name
 
 
-def upload_hearing_dates_data(conn: connect, cases_df: pd.DataFrame) -> None:
-    """Insert hearing dates data into hearing dates table in database"""
-
-    with conn.cursor() as cur:
-        query = """
-                        INSERT INTO hearing_dates
-                            (date, case_no_id)
-                        VALUES
-                            (%s, %s)
-                        """
-        cur.executemany(query,
-                        [cases_df["date"], cases_df["case_no_id"]])
-    conn.commit()
-
-
-def upload_cases_data(conn: connect, cases_df: pd.DataFrame) -> None:
+def upload_case_data(conn: connect, cases_df: pd.DataFrame) -> None:
     """Insert case data into case table in database."""
 
     with conn.cursor() as cur:
         query = """
-                        INSERT INTO cases
-                            (judge_id, verdict, summary)
+                        INSERT INTO case
+                            (case_no_id, title, judge_id, verdict, summary, transcript_date)
                         VALUES
-                            (%s, %s, %s)
+                            (%s, %s, %s, %s, %s, %s)
                         """
         cur.executemany(query,
-                        [cases_df["judge_id"], cases_df["verdict"], cases_df['summary']])
+                        [cases_df['case_no'], cases_df['title'], cases_df["judge_id"], cases_df["verdict"], cases_df['summary'], cases_df['date']])
     conn.commit()
 
 
@@ -85,9 +70,7 @@ def load_to_database(cases_df: pd.DataFrame) -> None:
 
     cases_df['judge_id'] = cases_df['judge_name'].apply(get_judge_id)
 
-    upload_cases_data(conn, cases_df)
-
-    upload_hearing_dates_data(conn, cases_df)
+    upload_case_data(conn, cases_df)
 
     logging.info("Uploaded case and hearing date data successfully.")
 
