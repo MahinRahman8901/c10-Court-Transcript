@@ -3,6 +3,8 @@ the format dd/mm/yyyy and the names are stripped of their titles.'''
 
 import re
 
+import pandas as pd
+
 from extract import extract_cases
 
 
@@ -18,7 +20,7 @@ def is_correct_date_format(date: str) -> bool:
     return False
 
 
-def format_date(date: str, split_on: str):
+def format_date(date: str, split_on: str) -> str:
     '''Formats dates that are given in format d/mm/yyyy or d month yyyy.'''
 
     components = date.split(split_on)
@@ -67,7 +69,7 @@ def clean_date(date: str) -> str:
     return date
 
 
-def strip_titles(full_name: str):
+def strip_titles(full_name: str) -> str:
     '''Strips all titles so we are just left with the name.'''
 
     extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable',
@@ -84,13 +86,14 @@ def strip_titles(full_name: str):
     return ' '.join(judge_name)
 
 
-def clean_dates_and_names():
+def clean_dates_and_names(data: pd.DataFrame):
     '''Formats dates and standardizes names.'''
-    data = extract_cases(5)
+
     data['date'] = data['date'].apply(clean_date)
     data['judge_name'] = data['judge_name'].apply(strip_titles)
 
 
 if __name__ == "__main__":
 
-    clean_dates_and_names()
+    cases = extract_cases(5)
+    clean_dates_and_names(cases)
