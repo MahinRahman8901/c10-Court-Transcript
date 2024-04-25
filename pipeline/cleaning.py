@@ -86,14 +86,27 @@ def strip_titles(full_name: str) -> str:
     return ' '.join(judge_name)
 
 
-def clean_dates_and_names(data: pd.DataFrame):
-    '''Formats dates and standardizes names.'''
+def standardize_case_no(case_no: str):
+    '''Makes sure all case numbers are in the same format.'''
+    if len(case_no) == 14:
+        return case_no
+
+    formatted = ''.join(case_no.split(' '))
+
+    formatted = ' & '.join(formatted.split('&'))
+
+    return formatted
+
+
+def clean_data(data: pd.DataFrame):
+    '''Formats dates and standardizes names and case number IDs..'''
 
     data['date'] = data['date'].apply(clean_date)
     data['judge_name'] = data['judge_name'].apply(strip_titles)
+    data['case_no'] = data['case_no'].apply(standardize_case_no)
 
 
 if __name__ == "__main__":
 
     cases = extract_cases(5)
-    clean_dates_and_names(cases)
+    clean_data(cases)
