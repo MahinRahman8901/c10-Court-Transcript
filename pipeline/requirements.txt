@@ -6,3 +6,4 @@ pandas
 python-dotenv
 pypdf
 openai
+psycopg2-binary
