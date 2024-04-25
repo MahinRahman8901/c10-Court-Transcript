@@ -9,6 +9,8 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from psycopg2 import connect, sql
 from psycopg2.extras import RealDictCursor
+from rapidfuzz.fuzz import partial_ratio
+from rapidfuzz.process import extractOne
 
 
 # ========== GLOBALS ==========
@@ -79,19 +81,19 @@ def convert_date(datestr: str) -> datetime:
     length = len(datestr)
 
     if length == 10:
-        return datetime.strptime(datestr, "%d-%m-%Y")
+        return datetime.strptime(datestr, "%d-%m-%Y").strftime("%Y-%m-%d")
     if length == 8:
-        return datetime.strptime(datestr, "%d-%m-%y")
+        return datetime.strptime(datestr, "%d-%m-%y").strftime("%Y-%m-%d")
     if length == 9:
-        return datetime.strptime(datestr, "%d-%b-%y")
+        return datetime.strptime(datestr, "%d-%b-%y").strftime("%Y-%m-%d")
 
 
-def extract_name(judge: str, title: str) -> str:
-    """Strips away any prefix and suffix; extracts gender from prefix.
-    Returns a name and a gender."""
+def extract_name_gender(judge: str, title: str) -> str:
+    """Strips away any prefix and suffix.
+    Returns a name."""
 
     if title in judge:
-        prefix, name = judge.split(f" {title} ")
+        prefix, name = [part.strip() for part in judge.split(f" {title} ")]
     else:
         for token in title.split():
             if token in judge:
@@ -102,8 +104,10 @@ def extract_name(judge: str, title: str) -> str:
         gender = "F"
     elif prefix in ["His", "Mr"]:
         gender = "M"
-    else:
+    elif prefix in ["Their"]:
         gender = "X"
+    else:
+        gender = None
 
     if "(" not in name:
         return name.strip(), gender
@@ -116,13 +120,13 @@ def extract_name(judge: str, title: str) -> str:
 def transform_df(df: pd.DataFrame,
                  title: str,
                  type: str,
-                 circuit: str = "") -> pd.DataFrame:
+                 circuit: str = "N/A") -> pd.DataFrame:
     """Cleans and enriches the data.
     Returns transformed data as pd.DF."""
 
     df["appointment"] = df["appointment"].apply(convert_date)
 
-    df["judge"] = df["judge"].apply(extract_name, args=(title,))
+    df["judge"] = df["judge"].apply(extract_name_gender, args=(title,))
     df["name"] = df["judge"].str[0]
     df["gender"] = df["judge"].str[1]
 
@@ -136,11 +140,11 @@ def transform_df(df: pd.DataFrame,
     return df
 
 
-def concat_dfs(dfs: list[pd.DataFrame]) -> list:
+def concat_dfs(dfs: list[pd.DataFrame]) -> pd.DataFrame:
     """Concatenates pd.DFs.
     Returns one single pd.DF"""
 
-    return pd.concat(dfs, ignore_index=True).to_records(index=False)
+    return pd.concat(dfs, ignore_index=True)
 
 
 # ========== FUNCTIONS: DATABASE ==========
@@ -167,19 +171,50 @@ def get_db_table(conn: connect, table: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-# def upload_data(conn: connect, df: pd.DataFrame) -> None:
-#     """Insert judge data into judge table in db."""
+def fuzzy_match_circuit(circuit: str, circuit_df: pd.DataFrame) -> int:
+    """Returns corresponding circuit ids by fuzzy matching circuit strings."""
 
-#     with conn.cursor() as cur:
-#         query = """
-#                 INSERT INTO judges
-#                     (name, gender, appointed, judge_type_id, circuit_id)
-#                 VALUES
-#                     (%s, %s, %s)
-#                 """
-#         cur.executemany(query,
-#                         [df["at"], df["site"], df["val"]])
-#     conn.commit()
+    circuits = circuit_df["name"]
+
+    circuit_id = extractOne(circuit, circuits,
+                            scorer=partial_ratio,
+                            score_cutoff=90)
+
+    if circuit_id == None:
+        return "N/A"
+
+    return circuit_id[0]
+
+
+def fill_ids(judges: pd.DataFrame,
+             types: pd.DataFrame,
+             circuits: pd.DataFrame) -> list[dict]:
+    """Converts judge type and circuit strings to corresponding ids in db.
+    Returns transformed judge data as pd.DF."""
+
+    judges = judges.join(types.set_index("type_name"), "type", "left"
+                         ).drop(columns="type")
+
+    judges["circuit"] = judges["circuit"].apply(
+        fuzzy_match_circuit, args=(circuits,))
+    judges = judges.join(circuits.set_index("name"), "circuit", "left"
+                         ).drop(columns="circuit")
+
+    return judges.to_records(index=False)
+
+
+def upload_data(conn: connect, records: list[tuple]) -> None:
+    """Insert judge data into judge table in db."""
+
+    with conn.cursor() as cur:
+        query = """
+                INSERT INTO judges
+                    (name, gender, appointed, judge_type_id, circuit_id)
+                VALUES
+                    (%s)
+                """
+        cur.executemany(query, records)
+    conn.commit()
 
 
 # ========== MAIN ==========
@@ -214,9 +249,11 @@ def main():
     judges = concat_dfs([kings_bench, circuit_judges])
 
     logger.info("=========== LOADING ==========")
-    circuit = get_db_table(conn, "circuit")
-    judge_type = get_db_table(conn, "judge_type")
-    print(judge_type)
+    judge_types = get_db_table(conn, "judge_type")
+    circuits = get_db_table(conn, "circuit")
+    judges = fill_ids(judges, judge_types, circuits)
+
+    upload_data(conn, judges)
 
 
 if __name__ == "__main__":
