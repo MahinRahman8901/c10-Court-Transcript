@@ -34,7 +34,7 @@ def get_judge_id(conn: connect, judge_name: str) -> int | None:
                 """,
                     (judge_name,)
                     )
-    result = cur.fetchone()
+        result = cur.fetchone()
     if result:
         return result[0]
     return None
@@ -51,7 +51,7 @@ def upload_case_data(conn: connect, cases_df: pd.DataFrame) -> None:
 
     with conn.cursor() as cur:
         query = """
-                        INSERT INTO case
+                        INSERT INTO court_case
                             (case_no_id, title, judge_id, verdict, summary, transcript_date)
                         VALUES
                             (%s, %s, %s, %s, %s, %s)
