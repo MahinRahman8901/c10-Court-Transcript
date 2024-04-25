@@ -1,5 +1,5 @@
 INSERT INTO judge_type
-    ("name")
+    ("type_name")
 VALUES
     ('Supreme Court Judge'),
     ('High Court King’s Bench Division'),
@@ -17,6 +17,7 @@ VALUES
 INSERT INTO circuit
     ("name")
 VALUES
+    ('N/A'),
     ('London'),
     ('North East'),
     ('South East'),
