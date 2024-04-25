@@ -179,9 +179,10 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
         for case_url in combined_urls:
             case_soup = get_case_soup(case_url)
-            case_title = get_case_title(case_soup)
-            pdf_url = get_case_pdf_url(case_soup)
-            extracted_cases.append({"title": case_title, "pdf": pdf_url})
+            if case_soup:
+                case_title = get_case_title(case_soup)
+                pdf_url = get_case_pdf_url(case_soup)
+                extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
 
