@@ -125,39 +125,40 @@ def parse_pdf(court_case: dict):
     last_page = reader.pages[-1].extract_text()
 
     try:
-        judge = re.search(r"(?<=Before :\n)(.*)", first_page)
+        judge = re.search(r"(?<=Before :\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before  : \n \n)(.*)", first_page)
+            judge = re.search(r"(?<=Before  : \n \n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before : \n \n)(.*)", first_page)
+            judge = re.search(r"(?<=Before : \n \n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before:\n)(.*)", first_page)
+            judge = re.search(r"(?<=Before:\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=BEFORE:\n)(.*)", first_page)
+            judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(THE HONOURABLE.*)", first_page)
+            judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
 
         court_case["judge_name"] = judge.group(1).strip()
 
         case_no = re.search(
-            r"(CL.*)", first_page)
-        if not case_no:
-            case_no = re.search(
-                r"(LM.*)", first_page)
+            r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
         court_case["case_no"] = case_no.group(1).strip()
 
         court_date = re.search(
             r"(?<=Date: )(.*)", first_page)
         if not court_date:
             court_date = re.search(
-                r"(.* [0-9]* \w* [0-9]*)", first_page)
+                r"(?<=Date : )(.*)", first_page)
+        if not court_date:
+            print(first_page)
+            court_date = re.search(
+                r"([\w]{0,},? ?[0-9]{1,2}(?:st|nd|rd|th)? [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
 
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
 
         court_case["conclusion"] = last_page
-    except:
+    except Exception as e:
         court_case.clear()
 
 
@@ -204,4 +205,4 @@ def extract_cases(pages: int) -> pd.DataFrame:
 if __name__ == "__main__":
 
     df = extract_cases(5)
-    print(df[["judge_name", "case_no"]])
+    print(df[["title", "case_no", "date"]])
