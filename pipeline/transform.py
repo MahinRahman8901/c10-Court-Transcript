@@ -152,13 +152,14 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
 
+    cleaned_cases['date'] = pd.to_datetime(
+        cleaned_cases['date'], dayfirst=True)
+
     return cleaned_cases
 
 
 if __name__ == "__main__":
 
-    cases = extract_cases(5)
+    cases = extract_cases(1)
 
     transformed_cases = transform_and_apply_gpt(cases)
-
-    print(transformed_cases)

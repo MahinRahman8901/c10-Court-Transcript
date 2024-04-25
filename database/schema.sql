@@ -11,7 +11,7 @@ CREATE TABLE circuit(
 );
 
 CREATE TABLE judge(
-    "judge_id" SMALLINT UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    "judge_id" INT UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     "name" TEXT NOT NULL,
     "appointed" DATE,
     "circuit_id" SMALLINT,
@@ -23,10 +23,10 @@ CREATE TABLE judge(
 
 CREATE TABLE court_case(
     "case_no_id" VARCHAR(17) UNIQUE PRIMARY KEY ,
-    "judge_id" SMALLINT NOT NULL,
+    "judge_id" INT NOT NULL,
     "verdict" TEXT NOT NULL,
     "summary" TEXT NOT NULL,
-    "title" VARCHAR(50) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
     "transcript_date" DATE NOT NULL,
     FOREIGN KEY ("judge_id") REFERENCES judge("judge_id")
 );
