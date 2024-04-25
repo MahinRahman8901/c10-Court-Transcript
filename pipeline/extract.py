@@ -63,47 +63,42 @@ def combine_case_url(url_list: list[str]) -> list[str]:
     return []
 
 
-def get_case_pdf_url(web_url: str) -> str:
+def get_case_soup(web_url: str) -> BeautifulSoup:
+    try:
+        response = requests.get(web_url, timeout=10)
+
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        return soup
+    except requests.RequestException as error:
+        logging.info(f"Error fetching URL: {error}")
+
+
+def get_case_pdf_url(case_soup: BeautifulSoup) -> str:
     """Return the url for downloading the pdf transcript of a case."""
-    try:
-        response = requests.get(web_url, timeout=10)
 
-        response.raise_for_status()
+    pdf_container = case_soup.find(
+        'div', class_='judgment-toolbar__buttons judgment-toolbar-buttons')
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+    pdf_url_anchor = pdf_container.find(
+        'a', class_='judgment-toolbar-buttons__option--pdf btn')
 
-        pdf_container = soup.find(
-            'div', class_='judgment-toolbar__buttons judgment-toolbar-buttons')
+    pdf_url = pdf_url_anchor['href']
 
-        pdf_url_anchor = pdf_container.find(
-            'a', class_='judgment-toolbar-buttons__option--pdf btn')
-
-        pdf_url = pdf_url_anchor['href']
-
-        return pdf_url
-    except requests.RequestException as error:
-        logging.info(f"Error fetching URL: {error}")
-        return ''
+    return pdf_url
 
 
-def get_case_title(web_url: str) -> str:
+def get_case_title(case_soup: BeautifulSoup) -> str:
     """Return the title of an accessed case."""
-    try:
-        response = requests.get(web_url, timeout=10)
 
-        response.raise_for_status()
+    title_container = case_soup.find(
+        'h1', class_='judgment-toolbar__title')
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+    title = title_container.text
 
-        title_container = soup.find(
-            'h1', class_='judgment-toolbar__title')
-
-        title = title_container.text
-
-        return title.replace("/", "-")
-    except requests.RequestException as error:
-        logging.info(f"Error fetching URL: {error}")
-        return ''
+    return title.replace("/", "-")
 
 
 def download_pdfs(court_case: dict) -> None:
@@ -183,8 +178,9 @@ def extract_cases(pages: int) -> pd.DataFrame:
         combined_urls = combine_case_url(case_url_list)
 
         for case_url in combined_urls:
-            case_title = get_case_title(case_url)
-            pdf_url = get_case_pdf_url(case_url)
+            case_soup = get_case_soup(case_url)
+            case_title = get_case_title(case_soup)
+            pdf_url = get_case_pdf_url(case_soup)
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
@@ -202,5 +198,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(5)
+    df = extract_cases(1)
     print(df[["title", "case_no", "date"]])
