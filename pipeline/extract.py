@@ -11,6 +11,19 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from pypdf import PdfReader
+from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
+
+
+def get_db_connection() -> connect:
+    """Returns db connection."""
+
+    return connect(dbname=ENV["DB_NAME"],
+                   user=ENV["DB_USER"],
+                   password=ENV["DB_PASSWORD"],
+                   host=ENV["DB_HOST"],
+                   port=ENV["DB_PORT"],
+                   cursor_factory=RealDictCursor)
 
 
 def get_index_to_infinity():
