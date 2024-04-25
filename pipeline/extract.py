@@ -33,7 +33,7 @@ def get_stored_titles(conn) -> list:
         cur.execute("SELECT title FROM court_case;")
         result = cur.fetchall()
 
-    return result
+    return [row["title"] for row in result]
 
 
 def get_index_to_infinity():
@@ -237,5 +237,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(5)
+    df = extract_cases(1)
     print(df[["title", "case_no", "date"]])
