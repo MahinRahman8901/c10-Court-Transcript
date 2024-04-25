@@ -20,9 +20,9 @@ CIRCUIT_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciar
 
 # ========== FUNCTIONS: SCRAPING ==========
 def scrape_kings_bench(url: str) -> pd.DataFrame:
-    """Get data from a list of judges with a URL"""
+  """Get data from a list of judges with a URL"""
 
-    try:
+   try:
         response = requests.get(url, timeout=10)
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -46,9 +46,9 @@ def scrape_kings_bench(url: str) -> pd.DataFrame:
 
 
 def scrape_circuit_judges(url: str) -> pd.DataFrame:
-    """Get data from a list of judges with a URL"""
+  """Get data from a list of judges with a URL"""
 
-    try:
+   try:
         response = requests.get(url, timeout=10)
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -220,7 +220,6 @@ def upload_data(conn: connect, records: list[tuple]) -> None:
 # ========== MAIN ==========
 def main():
     """Encapsulates all functions to run in main."""
-
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
@@ -230,6 +229,7 @@ def main():
     logger.info("=========== SCRAPING ==========")
 
     logger.info("===== scraping HCKB... =====")
+
     kings_bench = scrape_kings_bench(KINGS_BENCH_URL)
 
     logger.info("===== scraping CJ... =====")
@@ -238,12 +238,11 @@ def main():
     logger.info("=========== TRANSFORMING ==========")
 
     logger.info("===== transforming HCKB... =====")
-    kings_bench = transform_df(
-        kings_bench, "Justice", "High Court King’s Bench Division")
+
+    kings_bench = transform_df(kings_bench, "Justice", "High Court King’s Bench Division")
 
     logger.info("===== transforming CJ... =====")
-    circuit_judges = transform_df(
-        circuit_judges, "Honour Judge", "Circuit Judge")
+    circuit_judges = transform_df(circuit_judges, "Honour Judge", "Circuit Judge")
 
     logger.info("===== concatenating DFs... =====")
     judges = concat_dfs([kings_bench, circuit_judges])
@@ -254,7 +253,7 @@ def main():
     judges = fill_ids(judges, judge_types, circuits)
 
     upload_data(conn, judges)
-
+    
 
 if __name__ == "__main__":
     main()

@@ -21,3 +21,6 @@ data/
 .pytest_cache
 __pycache__
 /coverage
+
+# notebooks
+notebook.ipynb

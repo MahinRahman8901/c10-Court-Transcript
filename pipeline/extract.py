@@ -11,10 +11,34 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 from pypdf import PdfReader
+from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
+
+
+def get_db_connection() -> connect:
+    """Returns db connection."""
+
+    return connect(dbname=ENV["DB_NAME"],
+                   user=ENV["DB_USER"],
+                   password=ENV["DB_PASSWORD"],
+                   host=ENV["DB_HOST"],
+                   port=ENV["DB_PORT"],
+                   cursor_factory=RealDictCursor)
+
+
+def get_stored_titles(conn) -> list:
+    """Returns the list of titles stored in the database"""
+
+    with conn.cursor() as cur:
+        cur.execute("SELECT title FROM court_case;")
+        result = cur.fetchall()
+
+    return [row["title"] for row in result]
 
 
 def get_index_to_infinity():
     """Get index to infinity."""
+
     index = 1
     while True:
         yield index
@@ -23,6 +47,7 @@ def get_index_to_infinity():
 
 def scrape_law_case_urls(web_url: str) -> list[str]:
     """Get the url for each case on the courts webpage."""
+
     try:
         response = requests.get(web_url, timeout=10)
 
@@ -63,51 +88,49 @@ def combine_case_url(url_list: list[str]) -> list[str]:
     return []
 
 
-def get_case_pdf_url(web_url: str) -> str:
+def get_case_soup(web_url: str) -> BeautifulSoup:
+    """Returns the soup of a webpage."""
+
+    try:
+        response = requests.get(web_url, timeout=10)
+
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        return soup
+    except requests.RequestException as error:
+        logging.info(f"Error fetching URL: {error}")
+
+
+def get_case_pdf_url(case_soup: BeautifulSoup) -> str:
     """Return the url for downloading the pdf transcript of a case."""
-    try:
-        response = requests.get(web_url, timeout=10)
 
-        response.raise_for_status()
+    pdf_container = case_soup.find(
+        'div', class_='judgment-toolbar__buttons judgment-toolbar-buttons')
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+    pdf_url_anchor = pdf_container.find(
+        'a', class_='judgment-toolbar-buttons__option--pdf btn')
 
-        pdf_container = soup.find(
-            'div', class_='judgment-toolbar__buttons judgment-toolbar-buttons')
+    pdf_url = pdf_url_anchor['href']
 
-        pdf_url_anchor = pdf_container.find(
-            'a', class_='judgment-toolbar-buttons__option--pdf btn')
-
-        pdf_url = pdf_url_anchor['href']
-
-        return pdf_url
-    except requests.RequestException as error:
-        logging.info(f"Error fetching URL: {error}")
-        return ''
+    return pdf_url
 
 
-def get_case_title(web_url: str) -> str:
+def get_case_title(case_soup: BeautifulSoup) -> str:
     """Return the title of an accessed case."""
-    try:
-        response = requests.get(web_url, timeout=10)
 
-        response.raise_for_status()
+    title_container = case_soup.find(
+        'h1', class_='judgment-toolbar__title')
 
-        soup = BeautifulSoup(response.content, 'html.parser')
+    title = title_container.text
 
-        title_container = soup.find(
-            'h1', class_='judgment-toolbar__title')
-
-        title = title_container.text
-
-        return title.replace("/", "-")
-    except requests.RequestException as error:
-        logging.info(f"Error fetching URL: {error}")
-        return ''
+    return title.replace("/", "-")
 
 
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
+
     if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
         makedirs(f"{ENV['STORAGE_FOLDER']}/")
 
@@ -119,50 +142,51 @@ def download_pdfs(court_case: dict) -> None:
 
 def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
+
     reader = PdfReader(court_case['filepath'])
     first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
 
     try:
-        judge = re.search(r"(?<=Before :\n)(.*)", first_page)
+        judge = re.search(r"(?<=Before :\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before  : \n \n)(.*)", first_page)
+            judge = re.search(r"(?<=Before  : \n \n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before : \n \n)(.*)", first_page)
+            judge = re.search(r"(?<=Before : \n \n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=Before:\n)(.*)", first_page)
+            judge = re.search(r"(?<=Before:\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(?<=BEFORE:\n)(.*)", first_page)
+            judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
         if not judge:
-            judge = re.search(r"(THE HONOURABLE.*)", first_page)
-
+            judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
         court_case["judge_name"] = judge.group(1).strip()
 
         case_no = re.search(
-            r"(CL.*)", first_page)
-        if not case_no:
-            case_no = re.search(
-                r"(LM.*)", first_page)
+            r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
         court_case["case_no"] = case_no.group(1).strip()
 
         court_date = re.search(
             r"(?<=Date: )(.*)", first_page)
         if not court_date:
             court_date = re.search(
-                r"(.* [0-9]* \w* [0-9]*)", first_page)
-
+                r"(?<=Date : )(.*)", first_page)
+        if not court_date:
+            court_date = re.search(
+                r"([\w]{0,},? ?[0-9]{1,2}(?:st|nd|rd|th)? [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
 
         court_case["conclusion"] = last_page
+
     except:
         court_case.clear()
 
 
 def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     """Given a list of court cases, creates and returns a pandas dataframe."""
+
     cases = pd.DataFrame(court_cases)
     cases = cases.drop(columns=["pdf", "filepath"])
 
@@ -171,7 +195,12 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
 
 def extract_cases(pages: int) -> pd.DataFrame:
     """Given a number of pages, will return a DataFrame of all the cases from these pages."""
+
     load_dotenv()
+
+    conn = get_db_connection()
+
+    stored_titles = get_stored_titles(conn)
 
     extracted_cases = []
 
@@ -184,12 +213,17 @@ def extract_cases(pages: int) -> pd.DataFrame:
         combined_urls = combine_case_url(case_url_list)
 
         for case_url in combined_urls:
-            case_title = get_case_title(case_url)
-            pdf_url = get_case_pdf_url(case_url)
-            extracted_cases.append({"title": case_title, "pdf": pdf_url})
+            case_soup = get_case_soup(case_url)
+            if case_soup:
+                case_title = get_case_title(case_soup)
+                if case_title not in stored_titles:
+                    pdf_url = get_case_pdf_url(case_soup)
+                    extracted_cases.append(
+                        {"title": case_title, "pdf": pdf_url})
+                    stored_titles.append(case_title)
 
         sleep(1)
-    j = 0
+
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
@@ -203,5 +237,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(5)
-    print(df[["judge_name", "case_no"]])
+    df = extract_cases(1)
+    print(df[["title", "case_no", "date"]])

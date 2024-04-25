@@ -32,3 +32,9 @@ Our automated data pipeline will:
 
 #### Stretch Goals
 ![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
+
+## Assumptions
+
+- Assuming that all new cases will be on the first page of the govt website
+- Assuming that there is going to be less than 10 cases per day (high court cases)
+- 
