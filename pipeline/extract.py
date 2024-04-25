@@ -136,7 +136,6 @@ def parse_pdf(court_case: dict):
             judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
         if not judge:
             judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
-
         court_case["judge_name"] = judge.group(1).strip()
 
         case_no = re.search(
@@ -149,15 +148,14 @@ def parse_pdf(court_case: dict):
             court_date = re.search(
                 r"(?<=Date : )(.*)", first_page)
         if not court_date:
-            print(first_page)
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2}(?:st|nd|rd|th)? [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
-
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
 
         court_case["conclusion"] = last_page
+
     except Exception as e:
         court_case.clear()
 
@@ -190,7 +188,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
             extracted_cases.append({"title": case_title, "pdf": pdf_url})
 
         sleep(1)
-    j = 0
+
     for case_data in extracted_cases:
         download_pdfs(case_data)
         parse_pdf(case_data)
