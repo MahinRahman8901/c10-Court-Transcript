@@ -23,21 +23,23 @@ def get_db_connection() -> connect:
                    cursor_factory=RealDictCursor)
 
 
-def get_judge_id(conn: connect, judge_name: str) -> int | None:
+def get_judge_id(judge_name: str, conn: connect) -> int:
     """Matches the judge name to the names on the courts database"""
 
-    with conn.cursor() as cur:
-        cur.execute("""
-                SELECT judge_id
-                FROM judges
-                WHERE name = %s
-                """,
-                    (judge_name,)
-                    )
-        result = cur.fetchone()
-    if result:
-        return result[0]
-    return None
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                    SELECT judge_id
+                    FROM judge
+                    WHERE name = %s
+                    """,
+                        (judge_name,)
+                        )
+            result = cur.fetchone()
+            judge_id = result['judge_id']
+        return judge_id
+    except TypeError:
+        return 1
 
 
 def add_judge_id_to_dataframe(judge_name: str, cases_df: pd.DataFrame) -> None:
@@ -46,18 +48,19 @@ def add_judge_id_to_dataframe(judge_name: str, cases_df: pd.DataFrame) -> None:
     cases_df["judge_id"] = judge_name
 
 
-def upload_case_data(conn: connect, cases_df: pd.DataFrame) -> None:
+def upload_case_data(conn, cases_df):
     """Insert case data into case table in database."""
 
     with conn.cursor() as cur:
         query = """
-                        INSERT INTO court_case
-                            (case_no_id, title, judge_id, verdict, summary, transcript_date)
-                        VALUES
-                            (%s, %s, %s, %s, %s, %s)
-                        """
-        cur.executemany(query,
-                        [cases_df['case_no'], cases_df['title'], cases_df["judge_id"], cases_df["verdict"], cases_df['summary'], cases_df['date']])
+                INSERT INTO court_case
+                    (case_no_id, title, judge_id, verdict, summary, transcript_date)
+                VALUES
+                    (%s, %s, %s, %s, %s, %s)
+                """
+        data = list(zip(cases_df['case_no'], cases_df['title'], cases_df['judge_id'],
+                    cases_df['verdict'], cases_df['summary'], cases_df['date']))
+        cur.executemany(query, data)
     conn.commit()
 
 
@@ -68,7 +71,8 @@ def load_to_database(cases_df: pd.DataFrame) -> None:
 
     conn = get_db_connection()
 
-    cases_df['judge_id'] = cases_df['judge_name'].apply(get_judge_id)
+    cases_df['judge_id'] = cases_df['judge_name'].apply(
+        get_judge_id, args=(conn,))
 
     upload_case_data(conn, cases_df)
 
@@ -81,6 +85,6 @@ if __name__ == "__main__":
 
     cases = extract_cases(1)
 
-    transform_and_apply_gpt(cases)
+    transformed_cases = transform_and_apply_gpt(cases)
 
-    load_to_database(cases)
+    load_to_database(transformed_cases)
