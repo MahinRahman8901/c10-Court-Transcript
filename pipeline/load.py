@@ -24,16 +24,17 @@ def get_db_connection() -> connect:
 
 
 def get_judge_id(judge_name: str, conn: connect) -> int:
-    """Matches the judge name to the names on the courts database"""
+    """Matches the judge name using a LIKE pattern to the names on the courts database"""
 
     try:
+        like_pattern = f'%{judge_name}%'
         with conn.cursor() as cur:
             cur.execute("""
                     SELECT judge_id
                     FROM judge
-                    WHERE name = %s
+                    WHERE name LIKE %s
                     """,
-                        (judge_name,)
+                        (like_pattern,)
                         )
             result = cur.fetchone()
             judge_id = result['judge_id']
@@ -60,6 +61,7 @@ def upload_case_data(conn, cases_df):
                 """
         data = list(zip(cases_df['case_no'], cases_df['title'], cases_df['judge_id'],
                     cases_df['verdict'], cases_df['summary'], cases_df['date']))
+
         cur.executemany(query, data)
     conn.commit()
 
@@ -85,6 +87,8 @@ if __name__ == "__main__":
 
     cases = extract_cases(1)
 
-    transformed_cases = transform_and_apply_gpt(cases)
+    if not cases.empty:
 
-    load_to_database(transformed_cases)
+        transformed_cases = transform_and_apply_gpt(cases)
+
+        load_to_database(transformed_cases)

@@ -163,4 +163,6 @@ if __name__ == "__main__":
 
     cases = extract_cases(1)
 
-    transformed_cases = transform_and_apply_gpt(cases)
+    if not cases.empty:
+
+        transformed_cases = transform_and_apply_gpt(cases)

@@ -15,9 +15,10 @@ def main():
 
     cases = extract_cases(1)
 
-    transform_and_apply_gpt(cases)
+    if not cases.empty:
+        transformed_cases = transform_and_apply_gpt(cases)
 
-    load_to_database(cases)
+        load_to_database(transformed_cases)
 
 
 def handler(event, context):
@@ -25,8 +26,7 @@ def handler(event, context):
 
     main()
 
-    if __name__ == "__main__":
 
-        main()
+if __name__ == "__main__":
 
-        handler()
+    main()
