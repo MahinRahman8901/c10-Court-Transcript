@@ -137,3 +137,28 @@ def test_concat_df_contains_rows_for_all_input_dfs():
     test = [foo, bar, foobar]
 
     assert len(concat_dfs(test)) == len(test)
+
+
+"""
+Testing fuzzy_match_circuit
+"""
+
+
+def test_fuzzy_match_circuit_returns_string():
+    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
+                        "name": "fizz"}, {"name": "buzz"}])
+    assert isinstance(fuzzy_match_circuit("foo", test), str)
+
+
+def test_fuzzy_match_circuit_returns_correct_match():
+    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
+                        "name": "fizz"}, {"name": "buzz"}])
+
+    assert fuzzy_match_circuit("football", test) == "foo"
+
+
+def test_fuzzy_match_circuit_returns_na_on_poor_match():
+    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
+                        "name": "fizz"}, {"name": "buzz"}])
+
+    assert fuzzy_match_circuit("frog", test) == "N/A"
