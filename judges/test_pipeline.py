@@ -37,3 +37,12 @@ def test_extracting_name_gender_returns_correct_name_and_gender(judge, title, ex
     name, gender = extract_name_gender(judge, title)
     assert name == expected_name
     assert gender == expected_gender
+
+
+def test_extracting_name_gender_returns_correct_types():
+    extraction = extract_name_gender(
+        "His Honour Judge Fizz", "Honour Judge")
+    assert len(extraction) == 2
+    assert isinstance(extraction[0], str)
+    assert isinstance(extraction[1], str)
+    assert len(extraction[1]) == 1
