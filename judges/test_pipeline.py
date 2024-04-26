@@ -3,7 +3,7 @@ import pytest
 
 import pandas as pd
 
-from pipeline import convert_date, extract_name_gender, transform_df, concat_dfs
+from pipeline import convert_date, extract_name_gender, transform_df, concat_dfs, fuzzy_match_circuit
 
 """
 Testing convert_date
@@ -12,7 +12,9 @@ Testing convert_date
 
 @pytest.mark.parametrize("input_date, expected_date", [("12-03-2024", "2024-03-12"),
                                                        ("12-03-24", "2024-03-12"),
-                                                       ("12-Mar-24", "2024-03-12")])
+                                                       ("12-Mar-24", "2024-03-12"),
+                                                       ("07-May-23", "2023-05-07"),
+                                                       ("29-Sep-09", "2009-09-29")])
 def test_convert_date_returns_correct_format(input_date, expected_date):
     """Tests that the dates are returned in the correct format."""
 
@@ -34,7 +36,15 @@ Testing extracting_name_gender
 @pytest.mark.parametrize("judge, title, expected_name, expected_gender", [("His Honour Judge Foo", "Honour Judge", "Foo", "M"),
                                                                           ("Her Honour Judge Bar",
                                                                            "Honour Judge", "Bar", "F"),
-                                                                          ("Their Honour Judge Foobar", "Honour Judge", "Foobar", "X")])
+                                                                          ("Their Honour Judge Foobar",
+                                                                           "Honour Judge", "Foobar", "X"),
+                                                                          ("Mr Justice Fizz",
+                                                                           "Justice", "Fizz", "M"),
+                                                                          ("Mrs Justice Buzz",
+                                                                           "Justice", "Buzz", "F"),
+                                                                          ("Miss Justice Fizzbuzz",
+                                                                           "Justice", "Fizzbuzz", "F")
+                                                                          ])
 def test_extracting_name_gender_returns_correct_name_and_gender(judge, title, expected_name, expected_gender):
     """Tests the correct name and gender are returned."""
 
@@ -59,24 +69,40 @@ Testing transform_df
 """
 
 
-def test_transform_df_returns_data_frame():
+@pytest.mark.parametrize("name, date, title", [("His Honour Judge Fizz", "12-Mar-24", "Honour Judge"),
+                                               ("Her Honour Judge Buzz",
+                                                "12-03-24", "Honour Judge"),
+                                               ("Mr Justice Foo",
+                                                "12-09-2024", "Justice"),
+                                               ("Their Honour Judge Bar",
+                                                "10-Jun-24", "Honour Judge"),
+                                               ("Miss Justice Foobar", "07-05-02", "Justice")])
+def test_transform_df_returns_data_frame(name, date, title):
     """Tests a DataFrame is returned."""
 
-    judge_data = [{"judge": "His Honour Judge Fizz",
-                  "appointment": "12-03-2024"}]
+    judge_data = [{"judge": name,
+                  "appointment": date}]
     df = pd.DataFrame(judge_data)
-    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+    tdf = transform_df(df, title, "Circuit Judge")
 
     assert isinstance(tdf, pd.DataFrame)
 
 
-def test_transform_df_contains_correct_columns():
+@pytest.mark.parametrize("name, date, title", [("His Honour Judge Fizz", "12-Mar-24", "Honour Judge"),
+                                               ("Her Honour Judge Bar",
+                                                "12-03-24", "Honour Judge"),
+                                               ("Mr Justice Foo",
+                                                "12-09-2024", "Justice"),
+                                               ("Their Honour Judge Bar",
+                                                "10-Jun-24", "Honour Judge"),
+                                               ("Miss Justice Foobar", "07-05-02", "Justice")])
+def test_transform_df_contains_correct_columns(name, date, title):
     """Tests that all desired columns are present in the transformed DataFrame."""
 
-    judge_data = [{"judge": "His Honour Judge Fizz",
-                  "appointment": "12-03-2024"}]
+    judge_data = [{"judge": name,
+                  "appointment": date}]
     df = pd.DataFrame(judge_data)
-    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+    tdf = transform_df(df, title, "Circuit Judge")
 
     columns = ["name", "gender", "appointment", "type", "circuit"]
 
@@ -111,3 +137,26 @@ def test_concat_df_contains_rows_for_all_input_dfs():
     test = [foo, bar, foobar]
 
     assert len(concat_dfs(test)) == len(test)
+
+
+"""
+Testing fuzzy_match_circuit
+"""
+
+
+def test_fuzzy_match_circuit_returns_string():
+    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
+                        "name": "fizz"}, {"name": "buzz"}])
+    assert isinstance(fuzzy_match_circuit("foo", test), str)
+
+
+@pytest.mark.parametrize("test_string, expected_match", [("football", "foo"),
+                                                         ("frog", "N/A"),
+                                                         ("fizzy", "fizz"),
+                                                         ("buzzybee", "buzz"),
+                                                         ("teebar", "bar")])
+def test_fuzzy_match_circuit_returns_correct_match(test_string, expected_match):
+    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
+                        "name": "fizz"}, {"name": "buzz"}])
+
+    assert fuzzy_match_circuit(test_string, test) == expected_match
