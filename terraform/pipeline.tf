@@ -43,7 +43,7 @@ resource "aws_lambda_function" "court-pipeline-terraform" {
   role          = aws_iam_role.lambda_execution_role.arn
   image_uri     = "129033205317.dkr.ecr.eu-west-2.amazonaws.com/c10-court-pipeline:latest"
 
-  timeout       = 300  
+  timeout       = 900  
   memory_size   = 512 
 
 
