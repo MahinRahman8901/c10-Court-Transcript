@@ -60,6 +60,8 @@ Testing transform_df
 
 
 def test_transform_df_contains_correct_columns():
+    """Tests that all desired columns are present in the transformed DataFrame."""
+
     judge_data = [{"judge": "His Honour Judge Fizz",
                   "appointment": "12-03-2024"}]
     df = pd.DataFrame(judge_data)
