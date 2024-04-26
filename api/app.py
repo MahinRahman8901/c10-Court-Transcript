@@ -2,11 +2,17 @@
 
 from psycopg2 import OperationalError
 from dotenv import load_dotenv
-from flask import Flask, jsonify
-from queries import get_db_connection, get_table, get_case_by_case_no
+from flask import Flask, jsonify, render_template
+from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id
 from os import environ as ENV
 
 app = Flask(__name__)
+
+
+@app.route('/')
+def home():
+    """Render the home page"""
+    return render_template('homepage.html')
 
 
 @app.route('/cases', methods=['GET'])
@@ -46,6 +52,50 @@ def get_all_circuits():
         return jsonify({'circuits': circuits}), 200
     else:
         return jsonify({'message': 'No circuits found'}), 404
+
+
+@app.route('/judges', methods=['GET'])
+def get_all_judges():
+    """API that returns all the judges"""
+
+    conn = get_db_connection(ENV)
+    judge = get_table(conn, 'judge')
+    conn.close()
+    if judge:
+        return jsonify({'judges': judge}), 200
+    else:
+        return jsonify({'message': 'No judges found'}), 404
+
+
+@app.route('/judges/<int:judge_id>', methods=['GET'])
+def get_all_judges_by_id(judge_id):
+    """API that returns all the judges by given id"""
+
+    try:
+        judge_id = int(judge_id)
+    except ValueError:
+        return jsonify({'error': 'Judge ID must be an integer value'}), 404
+
+    conn = get_db_connection(ENV)
+    judge = get_judge_by_id(conn, judge_id)
+    conn.close()
+    if judge:
+        return jsonify({'judges': judge}), 200
+    else:
+        return jsonify({'message': f'Judge with judge_id {judge_id} not found'}), 404
+
+
+@app.route('/judge_types', methods=['GET'])
+def get_all_judge_Types():
+    """API that returns all the judge_types"""
+
+    conn = get_db_connection(ENV)
+    circuits = get_table(conn, 'judge_type')
+    conn.close()
+    if circuits:
+        return jsonify({'judge_type': circuits}), 200
+    else:
+        return jsonify({'message': 'No judge_type found'}), 404
 
 
 if __name__ == "__main__":

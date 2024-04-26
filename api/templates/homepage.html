@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courtroom API Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            color: #333;
+        }
+        p {
+            color: #666;
+            font-size: 18px;
+            line-height: 1.6;
+        }
+        ul {
+            margin: 20px 0;
+            padding: 0;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Courtroom API</h1>
+        <p>The Courtroom API provides access to information about court cases, judges, and circuits. It allows you to retrieve data programmatically for various use cases.</p>
+
+        <h2>How to Use the API</h2>
+        <p>The API offers several endpoints for accessing different types of data:</p>
+        <ul>
+            <li><strong>/cases:</strong> Retrieves a list of all court cases.</li>
+            <li><strong>/cases/{case_no}:</strong> Retrieves information about a specific court case identified by its case number.</li>
+            <li><strong>/judges/{judge_id}:</strong> Retrieves information about a specific judge identified by their ID.</li>
+            <li><strong>/circuits:</strong> Retrieves a list of all circuits.</li>
+        </ul>
+
+        <p>You can use these endpoints to integrate court case data into your applications, analyze legal trends, or build tools for legal professionals.</p>
+    </div>
+</body>
+</html>
