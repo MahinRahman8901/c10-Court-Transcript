@@ -150,15 +150,13 @@ def test_fuzzy_match_circuit_returns_string():
     assert isinstance(fuzzy_match_circuit("foo", test), str)
 
 
-def test_fuzzy_match_circuit_returns_correct_match():
+@pytest.mark.parametrize("test_string, expected_match", [("football", "foo"),
+                                                         ("frog", "N/A"),
+                                                         ("fizzy", "fizz"),
+                                                         ("buzzybee", "buzz"),
+                                                         ("teebar", "bar")])
+def test_fuzzy_match_circuit_returns_correct_match(test_string, expected_match):
     test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
                         "name": "fizz"}, {"name": "buzz"}])
 
-    assert fuzzy_match_circuit("football", test) == "foo"
-
-
-def test_fuzzy_match_circuit_returns_na_on_poor_match():
-    test = pd.DataFrame([{"name": "foo"}, {"name": "bar"}, {
-                        "name": "fizz"}, {"name": "buzz"}])
-
-    assert fuzzy_match_circuit("frog", test) == "N/A"
+    assert fuzzy_match_circuit(test_string, test) == expected_match
