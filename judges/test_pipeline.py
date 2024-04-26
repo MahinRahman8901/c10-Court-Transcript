@@ -1,6 +1,8 @@
 """This script tests functions in the pipeline.py file"""
 import pytest
 
+import pandas as pd
+
 from pipeline import convert_date, extract_name_gender, transform_df, concat_dfs
 
 """
@@ -50,3 +52,19 @@ def test_extracting_name_gender_returns_correct_types():
     assert isinstance(extraction[0], str)
     assert isinstance(extraction[1], str)
     assert len(extraction[1]) == 1
+
+
+"""
+Testing transform_df
+"""
+
+
+def test_transform_df_contains_correct_columns():
+    judge_data = [{"judge": "His Honour Judge Fizz",
+                  "appointment": "12-03-2024"}]
+    df = pd.DataFrame(judge_data)
+    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+
+    columns = ["name", "gender", "appointment", "type", "circuit"]
+
+    assert all(col in columns for col in tdf.columns.values)
