@@ -101,3 +101,38 @@ def test_get_case_pdf_url_returns_correct_element():
 """
 Testing get_case_title
 """
+
+
+def test_get_case_title_returns_string():
+    html_string = """
+            <h1 class="judgment-toolbar__title">
+                Foobar
+            </h1>
+        """
+
+    fake_soup = BeautifulSoup(html_string, "html.parser")
+    title = get_case_title(fake_soup)
+
+    assert isinstance(title, str)
+
+
+def test_get_case_title_returns_correct_title():
+    html_string = """
+            <h1 class="judgment-toolbar__title">Foobar</h1>
+        """
+
+    fake_soup = BeautifulSoup(html_string, "html.parser")
+    title = get_case_title(fake_soup)
+
+    assert title == "Foobar"
+
+
+def test_get_case_title_changes_slash_to_dash():
+    html_string = """
+            <h1 class="judgment-toolbar__title">Foo/bar</h1>
+        """
+
+    fake_soup = BeautifulSoup(html_string, "html.parser")
+    title = get_case_title(fake_soup)
+
+    assert title == "Foo-bar"
