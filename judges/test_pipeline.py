@@ -12,7 +12,9 @@ Testing convert_date
 
 @pytest.mark.parametrize("input_date, expected_date", [("12-03-2024", "2024-03-12"),
                                                        ("12-03-24", "2024-03-12"),
-                                                       ("12-Mar-24", "2024-03-12")])
+                                                       ("12-Mar-24", "2024-03-12"),
+                                                       ("07-May-23", "2023-05-07"),
+                                                       ("29-Sep-09", "2009-09-29")])
 def test_convert_date_returns_correct_format(input_date, expected_date):
     """Tests that the dates are returned in the correct format."""
 
@@ -34,7 +36,15 @@ Testing extracting_name_gender
 @pytest.mark.parametrize("judge, title, expected_name, expected_gender", [("His Honour Judge Foo", "Honour Judge", "Foo", "M"),
                                                                           ("Her Honour Judge Bar",
                                                                            "Honour Judge", "Bar", "F"),
-                                                                          ("Their Honour Judge Foobar", "Honour Judge", "Foobar", "X")])
+                                                                          ("Their Honour Judge Foobar",
+                                                                           "Honour Judge", "Foobar", "X"),
+                                                                          ("Mr Justice Fizz",
+                                                                           "Justice", "Fizz", "M"),
+                                                                          ("Mrs Justice Buzz",
+                                                                           "Justice", "Buzz", "F"),
+                                                                          ("Miss Justice Fizzbuzz",
+                                                                           "Justice", "Fizzbuzz", "F")
+                                                                          ])
 def test_extracting_name_gender_returns_correct_name_and_gender(judge, title, expected_name, expected_gender):
     """Tests the correct name and gender are returned."""
 
