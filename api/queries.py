@@ -104,7 +104,15 @@ def filter_cases_by_judge(conn, judge_id: int) -> list[RealDictRow]:
 
 def search_cases(conn, search: str) -> list[RealDictRow]:
     '''Returns cases whose titles contain a particular substring.'''
-    pass
+
+    with conn.cursor() as cur:
+
+        cur.execute(sql.SQL(
+            "SELECT * FROM court_case WHERE title LIKE '%{}%'").format(sql.SQL(search)))
+
+        cases = cur.fetchall()
+
+    return cases
 
 
 if __name__ == '__main__':
@@ -113,6 +121,6 @@ if __name__ == '__main__':
 
     CONN = get_db_connection(ENV)
 
-    result = filter_cases_by_judge(CONN, 5)
+    result = search_cases(CONN, "Palmer")
 
     print(result)
