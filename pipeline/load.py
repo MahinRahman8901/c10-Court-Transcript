@@ -32,7 +32,7 @@ def get_judge_id(judge_name: str, conn: connect) -> int:
             cur.execute("""
                     SELECT judge_id
                     FROM judge
-                    WHERE name LIKE %s
+                    WHERE name ILIKE %s
                     """,
                         (like_pattern,)
                         )
