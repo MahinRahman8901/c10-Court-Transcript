@@ -78,7 +78,7 @@ def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
 
     with conn.cursor() as cur:
 
-        cur.execute(sql.SQL("""SELECT * from judge WHERE {} = {}""").format(
+        cur.execute(sql.SQL("""SELECT * FROM judge WHERE {} = {}""").format(
             sql.Identifier(filter_by), sql.SQL(f'{id}')))
 
         judges = cur.fetchall()
@@ -88,7 +88,18 @@ def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
 
 def filter_cases_by_judge(conn, judge_id: int) -> list[RealDictRow]:
     '''Filters cases by judge id.'''
-    pass
+
+    if not isinstance(judge_id, int):
+        raise TypeError("Judge id must be an integer.")
+
+    with conn.cursor() as cur:
+
+        cur.execute(
+            sql.SQL(f"""SELECT * FROM court_case WHERE judge_id = {judge_id} """))
+
+        cases = cur.fetchall()
+
+    return cases
 
 
 def search_cases(conn, search: str) -> list[RealDictRow]:
@@ -102,6 +113,6 @@ if __name__ == '__main__':
 
     CONN = get_db_connection(ENV)
 
-    result = filter_judges(CONN, 'circuit_id', 5)
+    result = filter_cases_by_judge(CONN, 5)
 
-    print(len(result))
+    print(result)
