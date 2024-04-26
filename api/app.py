@@ -1,10 +1,13 @@
 '''Flask API for displaying data from the database.'''
 
-from psycopg2 import OperationalError
+from os import environ as ENV
+
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template
+from psycopg2 import OperationalError
+
 from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id
-from os import environ as ENV
+
 
 app = Flask(__name__)
 
