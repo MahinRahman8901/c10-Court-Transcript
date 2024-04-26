@@ -19,7 +19,7 @@ def get_db_connection(config):
 
 
 def get_table(conn, table: str) -> list[RealDictRow]:
-    '''Returns table information as a list. 
+    '''Returns table information as a list.
     Only accepts table names: circuit, court_case, judge and judge_type.'''
 
     if table in ['circuit', 'court_case', 'judge', 'judge_type']:
@@ -38,18 +38,20 @@ def get_table(conn, table: str) -> list[RealDictRow]:
 def get_judge_by_id(conn, judge_id: int) -> list[RealDictRow]:
     '''Returns all information about a specific judge.'''
 
-    try:
-        with conn.cursor() as cur:
+    if not isinstance(judge_id, int):
+        raise TypeError("Judge id must be an integer.")
 
-            cur.execute(sql.SQL("""SELECT * FROM judge
-                                WHERE judge_id = {};""").format(sql.Identifier(judge_id)))
+    with conn.cursor() as cur:
 
-            judge = cur.fetchone()
+        cur.execute(f"""SELECT * FROM judge
+                            WHERE judge_id = {judge_id};""")
 
-        return judge
+        judge = cur.fetchone()
 
-    except:
+    if not judge:
         return {'ERROR': f"No judge with ID {judge_id} exists."}
+
+    return judge
 
 
 def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
@@ -69,17 +71,28 @@ def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
         return {"ERROR": f"No case with case number {case_no}."}
 
 
-def filter_judges(filter_by: str) -> list[RealDictRow]:
+def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
     '''Filters judges by circuit or judge_type.'''
-    pass
+
+    if filter_by not in ['circuit_id', 'judge_type']:
+        raise ValueError(f"Cannot filter by {filter_by}")
+
+    with conn.cursor() as cur:
+
+        cur.execute(sql.SQL("""SELECT * from judge WHERE {} = {}""").format(
+            sql.Identifier(filter_by), sql.SQL(f'{id}')))
+
+        judges = cur.fetchall()
+
+    return judges
 
 
-def filter_cases_by_judge(judge_id: int):
+def filter_cases_by_judge(conn, judge_id: int) -> list[RealDictRow]:
     '''Filters cases by judge id.'''
     pass
 
 
-def search_cases(search: str):
+def search_cases(conn, search: str) -> list[RealDictRow]:
     '''Returns cases whose titles contain a particular substring.'''
     pass
 
@@ -90,6 +103,6 @@ if __name__ == '__main__':
 
     CONN = get_db_connection(ENV)
 
-    result = get_table(CONN, 'court_case')
+    result = filter_judges(CONN, 'circuit_id', 5)
 
-    print(type(result[0]))
+    print(result)
