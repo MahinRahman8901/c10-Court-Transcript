@@ -1,6 +1,7 @@
 INSERT INTO judge_type
     ("type_name")
 VALUES
+    ('N/A'),
     ('Supreme Court Judge'),
     ('High Court King’s Bench Division'),
     ('High Court Family Division'),
@@ -32,10 +33,5 @@ VALUES
 
 INSERT INTO judge ("name", "appointed", "circuit_id", "judge_type_id", "gender")
 VALUES
-    ('Unknown', '2000-02-20', 1, 1, 'X'),
-    ('BRIGHT', '2021-06-15', 5, 1, 'M'),
-    ('John Doe', '2021-06-15', 1, 1, 'M'),
-    ('Jane Smith', '2019-04-23', 2, 2, 'F'),
-    ('Alice Johnson', '2020-11-01', 1, 3, 'F'),
-    ('Chris Lee', '2022-01-12', 3, 1, 'M'),
-    ('Pat Thomas', '2018-05-19', 2, 8, 'M');
+    ('Unknown', '2000-02-20', 1, 1, 'X')
+;
