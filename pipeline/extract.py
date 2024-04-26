@@ -241,5 +241,5 @@ def extract_cases(pages: int) -> pd.DataFrame:
 if __name__ == "__main__":
 
     df = extract_cases(1)
-    if df:
+    if not df.empty:
         print(df[["title", "case_no", "date"]])
