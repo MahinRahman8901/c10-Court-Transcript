@@ -104,6 +104,8 @@ Testing get_case_title
 
 
 def test_get_case_title_returns_string():
+    """Tests that a string is returned."""
+
     html_string = """
             <h1 class="judgment-toolbar__title">
                 Foobar
@@ -117,6 +119,8 @@ def test_get_case_title_returns_string():
 
 
 def test_get_case_title_returns_correct_title():
+    """Tests that the correct title is returned."""
+
     html_string = """
             <h1 class="judgment-toolbar__title">Foobar</h1>
         """
@@ -128,6 +132,8 @@ def test_get_case_title_returns_correct_title():
 
 
 def test_get_case_title_changes_slash_to_dash():
+    """Tests that slashes in the title are changed to dashes."""
+
     html_string = """
             <h1 class="judgment-toolbar__title">Foo/bar</h1>
         """
