@@ -3,7 +3,7 @@ import pytest
 
 import pandas as pd
 
-from pipeline import convert_date, extract_name_gender, transform_df, concat_dfs
+from pipeline import convert_date, extract_name_gender, transform_df, concat_dfs, fuzzy_match_circuit
 
 """
 Testing convert_date
@@ -69,28 +69,40 @@ Testing transform_df
 """
 
 
-@pytest.mark.parametrize("name, date", [("His Honour Judge Fizz", "12-Mar-24"),
-                                        ("Her Honour Judge Bar", "12-03-24")])
-def test_transform_df_returns_data_frame(name, date):
+@pytest.mark.parametrize("name, date, title", [("His Honour Judge Fizz", "12-Mar-24", "Honour Judge"),
+                                               ("Her Honour Judge Buzz",
+                                                "12-03-24", "Honour Judge"),
+                                               ("Mr Justice Foo",
+                                                "12-09-2024", "Justice"),
+                                               ("Their Honour Judge Bar",
+                                                "10-Jun-24", "Honour Judge"),
+                                               ("Miss Justice Foobar", "07-05-02", "Justice")])
+def test_transform_df_returns_data_frame(name, date, title):
     """Tests a DataFrame is returned."""
 
     judge_data = [{"judge": name,
                   "appointment": date}]
     df = pd.DataFrame(judge_data)
-    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+    tdf = transform_df(df, title, "Circuit Judge")
 
     assert isinstance(tdf, pd.DataFrame)
 
 
-@pytest.mark.parametrize("name, date", [("His Honour Judge Fizz", "12-Mar-24"),
-                                        ("Her Honour Judge Bar", "12-03-24")])
-def test_transform_df_contains_correct_columns(name, date):
+@pytest.mark.parametrize("name, date, title", [("His Honour Judge Fizz", "12-Mar-24", "Honour Judge"),
+                                               ("Her Honour Judge Bar",
+                                                "12-03-24", "Honour Judge"),
+                                               ("Mr Justice Foo",
+                                                "12-09-2024", "Justice"),
+                                               ("Their Honour Judge Bar",
+                                                "10-Jun-24", "Honour Judge"),
+                                               ("Miss Justice Foobar", "07-05-02", "Justice")])
+def test_transform_df_contains_correct_columns(name, date, title):
     """Tests that all desired columns are present in the transformed DataFrame."""
 
     judge_data = [{"judge": name,
                   "appointment": date}]
     df = pd.DataFrame(judge_data)
-    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+    tdf = transform_df(df, title, "Circuit Judge")
 
     columns = ["name", "gender", "appointment", "type", "circuit"]
 
