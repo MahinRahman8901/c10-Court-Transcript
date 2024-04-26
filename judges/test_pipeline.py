@@ -59,6 +59,17 @@ Testing transform_df
 """
 
 
+def test_transform_df_returns_data_frame():
+    """Tests that all desired columns are present in the transformed DataFrame."""
+
+    judge_data = [{"judge": "His Honour Judge Fizz",
+                  "appointment": "12-03-2024"}]
+    df = pd.DataFrame(judge_data)
+    tdf = transform_df(df, "Honour Judge", "Circuit Judge")
+
+    assert isinstance(tdf, pd.DataFrame)
+
+
 def test_transform_df_contains_correct_columns():
     """Tests that all desired columns are present in the transformed DataFrame."""
 
@@ -70,3 +81,28 @@ def test_transform_df_contains_correct_columns():
     columns = ["name", "gender", "appointment", "type", "circuit"]
 
     assert all(col in columns for col in tdf.columns.values)
+
+
+"""
+Testing concat_df
+"""
+
+
+def test_concat_df_returns_data_frame():
+    foo = pd.DataFrame([{"data": "foo"}])
+    bar = pd.DataFrame([{"data": "bar"}])
+    foobar = pd.DataFrame([{"data": "foobar"}])
+
+    test = [foo, bar, foobar]
+
+    assert isinstance(concat_dfs(test), pd.DataFrame)
+
+
+def test_concat_df_contains_rows_for_all_input_dfs():
+    foo = pd.DataFrame([{"data": "foo"}])
+    bar = pd.DataFrame([{"data": "bar"}])
+    foobar = pd.DataFrame([{"data": "foobar"}])
+
+    test = [foo, bar, foobar]
+
+    assert len(concat_dfs(test)) == len(test)
