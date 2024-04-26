@@ -1,7 +1,9 @@
 """This script test functions in the extract.py file"""
 from os import environ as ENV
 
-from extract import create_dataframe, combine_case_url, get_index_to_infinity
+from bs4 import BeautifulSoup
+
+from extract import create_dataframe, combine_case_url, get_index_to_infinity, get_case_pdf_url, get_case_title
 
 """
 Testing create_dataframe
@@ -56,3 +58,37 @@ def test_get_index_to_infinity():
     second = next(indexes)
     assert first == 1
     assert second == 2
+
+
+"""
+Testing get_case_pdf_url
+"""
+
+
+def test_get_case_pdf_url_returns_string():
+    html_string = """
+                    <div class="judgment-toolbar__buttons judgment-toolbar-buttons"> == $0
+                        <a class="judgment-toolbar-buttons__option--pdf btn" href= "url"> == $0
+                        </a>
+                    </div>
+                """
+    fake_soup = BeautifulSoup(html_string, "html.parser")
+    url = get_case_pdf_url(fake_soup)
+    assert isinstance(url, str)
+
+
+def test_get_case_pdf_url_returns_correct_element():
+    html_string = """
+                    <div class="judgment-toolbar__buttons judgment-toolbar-buttons"> == $0
+                        <a class="judgment-toolbar-buttons__option--pdf btn" href= "foobar"> == $0
+                        </a>
+                    </div>
+                """
+    fake_soup = BeautifulSoup(html_string, "html.parser")
+    url = get_case_pdf_url(fake_soup)
+    assert url == "foobar"
+
+
+"""
+Testing get_case_title
+"""
