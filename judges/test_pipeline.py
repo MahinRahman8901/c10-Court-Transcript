@@ -59,22 +59,26 @@ Testing transform_df
 """
 
 
-def test_transform_df_returns_data_frame():
+@pytest.mark.parametrize("name, date", [("His Honour Judge Fizz", "12-Mar-24"),
+                                        ("Her Honour Judge Bar", "12-03-24")])
+def test_transform_df_returns_data_frame(name, date):
     """Tests a DataFrame is returned."""
 
-    judge_data = [{"judge": "His Honour Judge Fizz",
-                  "appointment": "12-03-2024"}]
+    judge_data = [{"judge": name,
+                  "appointment": date}]
     df = pd.DataFrame(judge_data)
     tdf = transform_df(df, "Honour Judge", "Circuit Judge")
 
     assert isinstance(tdf, pd.DataFrame)
 
 
-def test_transform_df_contains_correct_columns():
+@pytest.mark.parametrize("name, date", [("His Honour Judge Fizz", "12-Mar-24"),
+                                        ("Her Honour Judge Bar", "12-03-24")])
+def test_transform_df_contains_correct_columns(name, date):
     """Tests that all desired columns are present in the transformed DataFrame."""
 
-    judge_data = [{"judge": "His Honour Judge Fizz",
-                  "appointment": "12-03-2024"}]
+    judge_data = [{"judge": name,
+                  "appointment": date}]
     df = pd.DataFrame(judge_data)
     tdf = transform_df(df, "Honour Judge", "Circuit Judge")
 
