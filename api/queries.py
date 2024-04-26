@@ -109,7 +109,7 @@ def search_cases(conn, search: str) -> list[RealDictRow]:
     with conn.cursor() as cur:
 
         cur.execute(sql.SQL(
-            "SELECT * FROM court_case WHERE title LIKE '%{}%'").format(sql.SQL(search)))
+            "SELECT * FROM court_case WHERE title ILIKE '%{}%'").format(sql.SQL(search)))
 
         cases = cur.fetchall()
 
