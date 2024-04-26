@@ -22,3 +22,18 @@ def test_convert_date_returns_datetime():
 
     date = convert_date("12-03-2024")
     assert isinstance(date, str)
+
+
+"""
+Testing extracting_name_gender
+"""
+
+
+@pytest.mark.parametrize("judge, title, expected_name, expected_gender", [("His Honour Judge Foo", "Honour Judge", "Foo", "M"),
+                                                                          ("Her Honour Judge Bar",
+                                                                           "Honour Judge", "Bar", "F"),
+                                                                          ("Their Honour Judge Foobar", "Honour Judge", "Foobar", "X")])
+def test_extracting_name_gender_returns_correct_name_and_gender(judge, title, expected_name, expected_gender):
+    name, gender = extract_name_gender(judge, title)
+    assert name == expected_name
+    assert gender == expected_gender
