@@ -34,6 +34,40 @@ def get_table(conn, table: str) -> list[RealDictRow]:
     return {'ERROR': f'Table {table} does not exist.'}
 
 
+def get_judge_by_id(conn, judge_id: int):
+    '''Returns all information about a specific judge.'''
+
+    try:
+        with conn.cursor() as cur:
+
+            cur.execute(sql.SQL("""SELECT * FROM judge
+                                WHERE judge_id = {};""").format(sql.Identifier(judge_id)))
+
+            judge = cur.fetchone()
+
+        return judge
+
+    except:
+        return {'ERROR': f"No judge with ID {judge_id} exists."}
+
+
+def get_case_by_case_no(conn, case_no: str):
+    '''Returns all information about a specific case.'''
+
+    try:
+        with conn.cursor() as cur:
+
+            cur.execute(sql.SQL("""SELECT * FROM court_case
+                                WHERE case_no_id = {};""").format(sql.Identifier(case_no)))
+
+            case = cur.fetchone()
+
+        return case
+
+    except:
+        return {"ERROR": f"No case with case number {case_no}."}
+
+
 if __name__ == '__main__':
 
     load_dotenv()
