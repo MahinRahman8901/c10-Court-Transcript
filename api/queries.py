@@ -104,4 +104,4 @@ if __name__ == '__main__':
 
     result = filter_judges(CONN, 'circuit_id', 5)
 
-    print(result)
+    print(len(result))
