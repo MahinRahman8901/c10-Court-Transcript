@@ -70,17 +70,18 @@ def get_all_judges():
         return jsonify({'message': 'No judges found'}), 404
 
 
-@app.route('/judges/<int:judge_id>', methods=['GET'])
+@app.route('/judges/<judge_id>', methods=['GET'])
 def get_all_judges_by_id(judge_id):
     """API that returns all the judges by given id"""
 
+    conn = get_db_connection(ENV)
+
     try:
-        judge_id = int(judge_id)
-    except ValueError:
+        judge = get_judge_by_id(conn, judge_id)
+
+    except TypeError:
         return jsonify({'error': 'Judge ID must be an integer value'}), 404
 
-    conn = get_db_connection(ENV)
-    judge = get_judge_by_id(conn, judge_id)
     conn.close()
     if judge:
         return jsonify({'judges': judge}), 200
