@@ -12,6 +12,7 @@ Testing create_dataframe
 
 def test_create_dataframe_drops_columns():
     """Tests that the correct columns get dropped."""
+
     test_dict_list = [{"pdf": "foo", "filepath": "bar", "title": "foobar"}]
     df = create_dataframe(test_dict_list)
     assert df.columns.values[0] == "title"
@@ -19,6 +20,7 @@ def test_create_dataframe_drops_columns():
 
 def test_create_dataframe_returns_correct_num_items():
     """Tests that it returns the same amount of items you pass in."""
+
     test_dict_list = [{"pdf": "foo", "filepath": "bar", "title": "foobar"}, {
         "pdf": "fizz", "filepath": "buzz", "title": "fizzbuzz"}]
     df = create_dataframe(test_dict_list)
@@ -32,6 +34,7 @@ Testing combine_case_url
 
 def test_combine_case_url_returns_list():
     """Tests that a list is returned."""
+
     ENV['BASE_URL'] = "real.url"
     urls = ["fizz", "buzz", "foo", "bar"]
     case_urls = combine_case_url(urls)
@@ -40,6 +43,7 @@ def test_combine_case_url_returns_list():
 
 def test_combine_case_url_returns_correct_url():
     """Tests that the correct url is formed."""
+
     ENV['BASE_URL'] = "real.url"
     urls = ["fizz"]
     case_urls = combine_case_url(urls)
@@ -53,6 +57,7 @@ Testing get_index_to_infinity
 
 def test_get_index_to_infinity():
     """Tests that the generator function yields incrementally by 1."""
+
     indexes = get_index_to_infinity()
     first = next(indexes)
     second = next(indexes)
@@ -66,6 +71,8 @@ Testing get_case_pdf_url
 
 
 def test_get_case_pdf_url_returns_string():
+    """Tests that a string is returned."""
+
     html_string = """
                     <div class="judgment-toolbar__buttons judgment-toolbar-buttons"> == $0
                         <a class="judgment-toolbar-buttons__option--pdf btn" href= "url"> == $0
@@ -78,6 +85,8 @@ def test_get_case_pdf_url_returns_string():
 
 
 def test_get_case_pdf_url_returns_correct_element():
+    """Tests that the correct part of the html is returned."""
+
     html_string = """
                     <div class="judgment-toolbar__buttons judgment-toolbar-buttons"> == $0
                         <a class="judgment-toolbar-buttons__option--pdf btn" href= "foobar"> == $0
