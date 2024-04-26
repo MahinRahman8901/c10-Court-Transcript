@@ -8,6 +8,7 @@ from os import environ as ENV
 
 def get_db_connection(config):
     '''Establishes connection to the database.'''
+
     conn = connect(user=config["DB_USER"],
                    password=config["DB_PASSWORD"],
                    host=config["DB_HOST"],
@@ -34,7 +35,7 @@ def get_table(conn, table: str) -> list[RealDictRow]:
     return {'ERROR': f'Table {table} does not exist.'}
 
 
-def get_judge_by_id(conn, judge_id: int):
+def get_judge_by_id(conn, judge_id: int) -> list[RealDictRow]:
     '''Returns all information about a specific judge.'''
 
     try:
@@ -51,7 +52,7 @@ def get_judge_by_id(conn, judge_id: int):
         return {'ERROR': f"No judge with ID {judge_id} exists."}
 
 
-def get_case_by_case_no(conn, case_no: str):
+def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
     '''Returns all information about a specific case.'''
 
     try:
@@ -66,6 +67,16 @@ def get_case_by_case_no(conn, case_no: str):
 
     except:
         return {"ERROR": f"No case with case number {case_no}."}
+
+
+def filter_judges(filter_by: str) -> list[RealDictRow]:
+    '''Filters judges by circuit or judge_type.'''
+    pass
+
+
+def filter_cases_by_judge(judge_id: int):
+    '''Filters cases by judge id.'''
+    pass
 
 
 if __name__ == '__main__':
