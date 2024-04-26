@@ -131,10 +131,10 @@ def get_case_title(case_soup: BeautifulSoup) -> str:
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
 
-    if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
-        makedirs(f"{ENV['STORAGE_FOLDER']}/")
+    if not path.exists(f"/{ENV['STORAGE_FOLDER']}"):
+        makedirs(f"{ENV['STORAGE_FOLDER']}")
 
-    court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
+    court_case["filepath"] = f"/{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
     response = requests.get(court_case["pdf"])
     with open(f"{court_case['filepath']}", "wb") as f:
         f.write(response.content)

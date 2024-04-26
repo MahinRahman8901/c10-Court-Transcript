@@ -262,5 +262,11 @@ def main():
     upload_data(conn, judges)
 
 
+def handler(event, context):
+    """Pass the main function to a handler to be run by Lambda on AWS"""
+
+    main()
+
+
 if __name__ == "__main__":
     main()

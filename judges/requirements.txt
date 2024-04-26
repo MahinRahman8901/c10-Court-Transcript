@@ -2,6 +2,6 @@ python-dotenv
 requests
 bs4
 pandas
-psycopg2
+psycopg2-binary
 rapidfuzz
 pytest
