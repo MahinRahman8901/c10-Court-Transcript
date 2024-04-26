@@ -59,16 +59,15 @@ def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
 
     try:
         with conn.cursor() as cur:
-
-            cur.execute(sql.SQL("""SELECT * FROM court_case
-                                WHERE case_no_id = {};""").format(sql.Identifier(case_no)))
-
+            cur.execute(
+                """SELECT * FROM court_case WHERE case_no_id = %s;""", (case_no,))
             case = cur.fetchone()
 
         return case
 
-    except:
-        return {"ERROR": f"No case with case number {case_no}."}
+    except Exception as e:
+        print("Error:", e)
+        return None
 
 
 def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
