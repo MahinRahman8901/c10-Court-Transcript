@@ -230,12 +230,16 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     extracted_cases = list(filter(None, extracted_cases))
 
-    df = create_dataframe(extracted_cases)
+    if extracted_cases:
+        df = create_dataframe(extracted_cases)
+        return df
 
-    return df
+    logging.info("No new cases found.")
+    return None
 
 
 if __name__ == "__main__":
 
     df = extract_cases(1)
-    print(df[["title", "case_no", "date"]])
+    if df:
+        print(df[["title", "case_no", "date"]])
