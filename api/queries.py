@@ -1,9 +1,10 @@
 '''Functions that query the database for information.'''
 
+from os import environ as ENV
+
 from dotenv import load_dotenv
 from psycopg2 import connect, sql
 from psycopg2.extras import RealDictCursor, RealDictRow
-from os import environ as ENV
 
 
 def get_db_connection(config):
