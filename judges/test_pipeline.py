@@ -60,7 +60,7 @@ Testing transform_df
 
 
 def test_transform_df_returns_data_frame():
-    """Tests that all desired columns are present in the transformed DataFrame."""
+    """Tests a DataFrame is returned."""
 
     judge_data = [{"judge": "His Honour Judge Fizz",
                   "appointment": "12-03-2024"}]
@@ -89,6 +89,8 @@ Testing concat_df
 
 
 def test_concat_df_returns_data_frame():
+    """Tests that a DataFrame is returned."""
+
     foo = pd.DataFrame([{"data": "foo"}])
     bar = pd.DataFrame([{"data": "bar"}])
     foobar = pd.DataFrame([{"data": "foobar"}])
@@ -99,6 +101,9 @@ def test_concat_df_returns_data_frame():
 
 
 def test_concat_df_contains_rows_for_all_input_dfs():
+    """Tests the number of rows in the output DataFrame
+       is equal to the number of DataFrames provided in the input."""
+
     foo = pd.DataFrame([{"data": "foo"}])
     bar = pd.DataFrame([{"data": "bar"}])
     foobar = pd.DataFrame([{"data": "foobar"}])
