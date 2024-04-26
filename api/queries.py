@@ -79,6 +79,11 @@ def filter_cases_by_judge(judge_id: int):
     pass
 
 
+def search_cases(search: str):
+    '''Returns cases whose titles contain a particular substring.'''
+    pass
+
+
 if __name__ == '__main__':
 
     load_dotenv()
