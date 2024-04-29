@@ -131,10 +131,10 @@ def get_case_title(case_soup: BeautifulSoup) -> str:
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
 
-    if not path.exists(f"{ENV['STORAGE_FOLDER']}/"):
-        makedirs(f"{ENV['STORAGE_FOLDER']}/")
+    if not path.exists(f"/{ENV['STORAGE_FOLDER']}"):
+        makedirs(f"{ENV['STORAGE_FOLDER']}")
 
-    court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
+    court_case["filepath"] = f"/{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
     response = requests.get(court_case["pdf"])
     with open(f"{court_case['filepath']}", "wb") as f:
         f.write(response.content)
@@ -173,7 +173,7 @@ def parse_pdf(court_case: dict):
                 r"(?<=Date : )(.*)", first_page)
         if not court_date:
             court_date = re.search(
-                r"([\w]{0,},? ?[0-9]{1,2}(?:st|nd|rd|th)? [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
+                r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
@@ -230,12 +230,16 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     extracted_cases = list(filter(None, extracted_cases))
 
-    df = create_dataframe(extracted_cases)
+    if extracted_cases:
+        df = create_dataframe(extracted_cases)
+        return df
 
-    return df
+    logging.info("No new cases found.")
+    return None
 
 
 if __name__ == "__main__":
 
     df = extract_cases(1)
-    print(df[["title", "case_no", "date"]])
+    if not df.empty:
+        print(df[["title", "case_no", "date"]])

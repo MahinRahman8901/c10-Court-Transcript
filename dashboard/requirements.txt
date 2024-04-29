@@ -1,0 +1,9 @@
+pylint
+pytest
+python-dotenv
+psycopg2
+pandas
+altair
+pywaffle
+wordcloud
+streamlit

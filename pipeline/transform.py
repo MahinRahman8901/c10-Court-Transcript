@@ -83,7 +83,7 @@ def strip_titles(full_name: str) -> str:
         if part.lower() not in extras:
             judge_name.append(part)
 
-    return ' '.join(judge_name)
+    return ' '.join(judge_name).upper()
 
 
 def standardize_case_no(case_no: str):
@@ -163,4 +163,6 @@ if __name__ == "__main__":
 
     cases = extract_cases(1)
 
-    transformed_cases = transform_and_apply_gpt(cases)
+    if not cases.empty:
+
+        transformed_cases = transform_and_apply_gpt(cases)

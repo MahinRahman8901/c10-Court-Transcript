@@ -1,5 +1,9 @@
 """Python script responsible for extracting judge data using web scraping"""
 
+from rapidfuzz.process import extractOne
+from rapidfuzz.fuzz import partial_ratio
+from psycopg2.extras import RealDictCursor
+from psycopg2 import connect, sql
 from os import environ as ENV
 import logging
 from datetime import datetime
@@ -7,10 +11,6 @@ from dotenv import load_dotenv
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from psycopg2 import connect, sql
-from psycopg2.extras import RealDictCursor
-from rapidfuzz.fuzz import partial_ratio
-from rapidfuzz.process import extractOne
 
 
 # ========== GLOBALS ==========
@@ -20,9 +20,9 @@ CIRCUIT_URL = "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciar
 
 # ========== FUNCTIONS: SCRAPING ==========
 def scrape_kings_bench(url: str) -> pd.DataFrame:
-  """Get data from a list of judges with a URL"""
+    """Get data from a list of judges with a URL"""
 
-   try:
+    try:
         response = requests.get(url, timeout=10)
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -46,9 +46,9 @@ def scrape_kings_bench(url: str) -> pd.DataFrame:
 
 
 def scrape_circuit_judges(url: str) -> pd.DataFrame:
-  """Get data from a list of judges with a URL"""
+    """Get data from a list of judges with a URL"""
 
-   try:
+    try:
         response = requests.get(url, timeout=10)
 
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -200,7 +200,10 @@ def fill_ids(judges: pd.DataFrame,
     judges = judges.join(circuits.set_index("name"), "circuit", "left"
                          ).drop(columns="circuit")
 
-    return judges.to_records(index=False)
+    columns = list(zip(judges['name'], judges['gender'], judges['appointment'],
+                       judges['judge_type_id'], judges['circuit_id']))
+
+    return columns
 
 
 def upload_data(conn: connect, records: list[tuple]) -> None:
@@ -208,10 +211,10 @@ def upload_data(conn: connect, records: list[tuple]) -> None:
 
     with conn.cursor() as cur:
         query = """
-                INSERT INTO judges
+                INSERT INTO judge
                     (name, gender, appointed, judge_type_id, circuit_id)
                 VALUES
-                    (%s)
+                    (%s, %s, %s, %s, %s)
                 """
         cur.executemany(query, records)
     conn.commit()
@@ -220,6 +223,7 @@ def upload_data(conn: connect, records: list[tuple]) -> None:
 # ========== MAIN ==========
 def main():
     """Encapsulates all functions to run in main."""
+
     logger = logging.getLogger(__name__)
     logging.basicConfig(encoding='utf-8', level=logging.INFO)
 
@@ -239,10 +243,12 @@ def main():
 
     logger.info("===== transforming HCKB... =====")
 
-    kings_bench = transform_df(kings_bench, "Justice", "High Court King’s Bench Division")
+    kings_bench = transform_df(
+        kings_bench, "Justice", "High Court King’s Bench Division")
 
     logger.info("===== transforming CJ... =====")
-    circuit_judges = transform_df(circuit_judges, "Honour Judge", "Circuit Judge")
+    circuit_judges = transform_df(
+        circuit_judges, "Honour Judge", "Circuit Judge")
 
     logger.info("===== concatenating DFs... =====")
     judges = concat_dfs([kings_bench, circuit_judges])
@@ -252,8 +258,15 @@ def main():
     circuits = get_db_table(conn, "circuit")
     judges = fill_ids(judges, judge_types, circuits)
 
+    logger.info("===== uploading to database... =====")
     upload_data(conn, judges)
-    
+
+
+def handler(event, context):
+    """Pass the main function to a handler to be run by Lambda on AWS"""
+
+    main()
+
 
 if __name__ == "__main__":
     main()

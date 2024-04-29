@@ -1,4 +1,4 @@
-DROP TABLE IF EXISTS court_case, judge, judge_type, circuit;
+DROP TABLE IF EXISTS transcript, judge, judge_type, circuit;
 
 CREATE TABLE judge_type(
     "judge_type_id" SMALLINT UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
@@ -21,8 +21,9 @@ CREATE TABLE judge(
     FOREIGN KEY ("judge_type_id") REFERENCES judge_type("judge_type_id")
 );
 
-CREATE TABLE court_case(
-    "case_no_id" VARCHAR(17) UNIQUE PRIMARY KEY ,
+CREATE TABLE transcript(
+    "transcript_id" INT UNIQUE PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    "case_no" VARCHAR(17),
     "judge_id" INT NOT NULL,
     "verdict" TEXT NOT NULL,
     "summary" TEXT NOT NULL,

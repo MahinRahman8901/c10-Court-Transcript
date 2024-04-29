@@ -100,7 +100,7 @@ def get_all_judges_by_id(judge_id):
 
     try:
         judge = get_judge_by_id(conn, judge_id)
-
+        
     except TypeError as e:
         return jsonify({'error': f'{e}'}), 404
 
