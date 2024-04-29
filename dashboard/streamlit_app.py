@@ -104,7 +104,7 @@ if __name__ == "__main__":
         st.subheader("lorem ipsum something about Arelm and the dashboard")
         st.text("")
 
-    profiles, visualizations = st.columns([.35, .65], gap="medium")
+    profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
         # judge profile
         judge_profile_selection = get_judge_selection(conn)
