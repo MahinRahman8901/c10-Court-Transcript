@@ -1,10 +1,11 @@
 '''Script to standardize and clean data as well as extracting summaries and verdicts using GPT.'''
+from os import environ as ENV
+
 import re
 import pandas as pd
-
-from os import environ as ENV
 from dotenv import load_dotenv
 from openai import OpenAI
+
 from extract import extract_cases
 
 
