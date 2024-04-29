@@ -46,7 +46,6 @@ def format_date(date: str, split_on: str) -> str:
         components[2] = '20' + components[2]
     if len(components[2]) > 4:
         components[2] = components[:4]
-        print(type(components[2]))
 
     formatted_date = "/".join(components)
 
