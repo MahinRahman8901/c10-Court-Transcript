@@ -89,7 +89,7 @@ def filter_judges(conn, filters: dict) -> list[RealDictRow]:
 
             judges = cur.fetchall()
 
-        if len(filters) == 2:
+        elif len(filters) == 2:
 
             cur.execute(sql.SQL("""SELECT * FROM judge WHERE {} = {} AND {} = {}""").format(
                 sql.Identifier('circuit_id'), sql.SQL(
