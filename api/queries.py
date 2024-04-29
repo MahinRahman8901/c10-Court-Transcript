@@ -39,7 +39,7 @@ def get_table(conn, table: str) -> list[RealDictRow]:
 def get_judge_by_id(conn, judge_id: int) -> list[RealDictRow]:
     '''Returns all information about a specific judge.'''
 
-    if not isinstance(judge_id, int):
+    if not judge_id.isnumeric():
         raise TypeError("Judge id must be an integer.")
 
     with conn.cursor() as cur:
@@ -61,7 +61,7 @@ def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                """SELECT * FROM transcript WHERE case_no_id = %s;""", (case_no,))
+                """SELECT * FROM transcript WHERE case_no = %s;""", (case_no,))
             case = cur.fetchone()
 
         return case
@@ -76,6 +76,9 @@ def filter_judges(conn, filters: dict) -> list[RealDictRow]:
 
     if not all([f in ['circuit_id', 'judge_type_id'] for f in filters]):
         raise ValueError(f"Invalid filter.")
+
+    if not all([f.isnumeric() for f in filters.values()]):
+        raise TypeError(f"ID must be an integer.")
 
     with conn.cursor() as cur:
 

@@ -77,7 +77,10 @@ def get_all_judges():
     filters = request.args.to_dict()
 
     if filters:
-        judge = filter_judges(conn, filters)
+        try:
+            judge = filter_judges(conn, filters)
+        except Exception as e:
+            return jsonify({'error': f'{e}'}), 404
 
     else:
         judge = get_table(conn, 'judge')
@@ -89,17 +92,18 @@ def get_all_judges():
         return jsonify({'message': 'No judges found'}), 404
 
 
-@app.route('/judges/<int:judge_id>', methods=['GET'])
+@app.route('/judges/<judge_id>', methods=['GET'])
 def get_all_judges_by_id(judge_id):
     """API that returns all the judges by given id"""
 
-    try:
-        judge_id = int(judge_id)
-    except ValueError:
-        return jsonify({'error': 'Judge ID must be an integer value'}), 404
-
     conn = get_db_connection(ENV)
-    judge = get_judge_by_id(conn, judge_id)
+
+    try:
+        judge = get_judge_by_id(conn, judge_id)
+
+    except TypeError as e:
+        return jsonify({'error': f'{e}'}), 404
+
     conn.close()
     if judge:
         return jsonify({'judges': judge}), 200
