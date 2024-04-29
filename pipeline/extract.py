@@ -36,16 +36,6 @@ def get_stored_titles(conn) -> list:
     return [row["title"] for row in result]
 
 
-def get_stored_case_number_ids(conn) -> list:
-    """Returns a list of case number ids stored in the database"""
-
-    with conn.cursor() as cur:
-        cur.execute("SELECT case_no_id FROM court_case;")
-        result = cur.fetchall()
-
-    return [row["case_no_id"] for row in result]
-
-
 def get_index_to_infinity():
     """Get index to infinity."""
 
@@ -150,7 +140,7 @@ def download_pdfs(court_case: dict) -> None:
         f.write(response.content)
 
 
-def parse_pdf(court_case: dict, case_nos: list):
+def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
 
     reader = PdfReader(court_case['filepath'])
@@ -174,8 +164,6 @@ def parse_pdf(court_case: dict, case_nos: list):
 
         case_no = re.search(
             r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
-        if case_no.group(1).strip() in case_nos:
-            return None
         court_case["case_no"] = case_no.group(1).strip()
 
         court_date = re.search(
@@ -214,8 +202,6 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     stored_titles = get_stored_titles(conn)
 
-    stored_case_nos = get_stored_case_number_ids(conn)
-
     extracted_cases = []
 
     for i in range(1, pages+1):
@@ -240,7 +226,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     for case_data in extracted_cases:
         download_pdfs(case_data)
-        parse_pdf(case_data, stored_case_nos)
+        parse_pdf(case_data)
 
     extracted_cases = list(filter(None, extracted_cases))
 
