@@ -18,6 +18,10 @@ data "aws_ecs_cluster" "c10-ecs-cluster" {
     cluster_name = "c10-ecs-cluster"
 }
 
+data "aws_iam_role" "execution-role" {
+    name = "ecsTaskExecutionRole"
+}
+
 resource "aws_security_group" "rds_security_group" {
     name = "c10-court-db-secgroup-terraform"
     description = "Allows inbound Postgres access"
