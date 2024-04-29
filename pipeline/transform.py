@@ -1,10 +1,11 @@
 '''Script to standardize and clean data as well as extracting summaries and verdicts using GPT.'''
+from os import environ as ENV
+
 import re
 import pandas as pd
-
-from os import environ as ENV
 from dotenv import load_dotenv
 from openai import OpenAI
+
 from extract import extract_cases
 
 
@@ -46,7 +47,6 @@ def format_date(date: str, split_on: str) -> str:
         components[2] = '20' + components[2]
     if len(components[2]) > 4:
         components[2] = components[:4]
-        print(type(components[2]))
 
     formatted_date = "/".join(components)
 
@@ -161,11 +161,12 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
         get_case_summary, args=(AI,))
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
+
     cleaned_cases.dropna(subset=['date'], inplace=True)
 
-    print(cleaned_cases["date"])
     cleaned_cases['date'] = pd.to_datetime(
         cleaned_cases['date'], dayfirst=True, errors="coerce")
+
     cleaned_cases.dropna(subset=['date'], inplace=True)
 
     return cleaned_cases
