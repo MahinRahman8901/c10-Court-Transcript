@@ -2,8 +2,8 @@ pylint
 pytest
 python-dotenv
 psycopg2
-streamlit
 pandas
 altair
 pywaffle
 wordcloud
+streamlit
