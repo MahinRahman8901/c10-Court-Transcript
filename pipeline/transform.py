@@ -47,7 +47,7 @@ def format_date(date: str, split_on: str) -> str:
 
     formatted_date = "/".join(components)
 
-    return formatted_date.strip()
+    return formatted_date
 
 
 def clean_date(date: str) -> str:
@@ -68,11 +68,11 @@ def clean_date(date: str) -> str:
             else:
                 formatted_date = format_date(match, " ")
 
-            return formatted_date
+            return formatted_date.strip()
 
         return None
 
-    return date
+    return date.strip()
 
 
 def strip_titles(full_name: str) -> str:
