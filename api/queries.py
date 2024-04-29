@@ -108,7 +108,7 @@ def filter_judges(conn, filters: dict) -> list[RealDictRow]:
 def filter_cases_by_judge(conn, judge_id: int) -> list[RealDictRow]:
     '''Filters cases by judge id.'''
 
-    if not isinstance(judge_id, int):
+    if not judge_id.isnumeric():
         raise TypeError("Judge id must be an integer.")
 
     with conn.cursor() as cur:
