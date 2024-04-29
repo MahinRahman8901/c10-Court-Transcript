@@ -36,6 +36,16 @@ def get_stored_titles(conn) -> list:
     return [row["title"] for row in result]
 
 
+def get_stored_case_number_ids(conn) -> list:
+    """Returns a list of case number ids stored in the database"""
+
+    with conn.cursor() as cur:
+        cur.execute("SELECT case_no_id FROM court_case;")
+        result = cur.fetchall()
+
+    return [row["case_no_id"] for row in result]
+
+
 def get_index_to_infinity():
     """Get index to infinity."""
 
@@ -173,7 +183,7 @@ def parse_pdf(court_case: dict):
                 r"(?<=Date : )(.*)", first_page)
         if not court_date:
             court_date = re.search(
-                r"([\w]{0,},? ?[0-9]{1,2}(?:st|nd|rd|th)? [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
+                r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
         court_case["date"] = court_date.group(1).strip()
 
         court_case["introduction"] = second_page
