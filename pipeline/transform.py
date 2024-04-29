@@ -25,6 +25,9 @@ def format_date(date: str, split_on: str) -> str:
 
     components = date.split(split_on)
 
+    if int(components[0]) == 0:
+        components[0] = '01'
+
     if len(components[0]) == 1:
         components[0] = '0' + components[0]
 
@@ -38,6 +41,12 @@ def format_date(date: str, split_on: str) -> str:
                   'November': '11', 'December': '12'}
 
         components[1] = months[components[1]]
+
+    if len(components[2]) == 2:
+        components[2] = '20' + components[2]
+    if len(components[2]) > 4:
+        components[2] = components[:4]
+        print(type(components[2]))
 
     formatted_date = "/".join(components)
 
@@ -62,11 +71,11 @@ def clean_date(date: str) -> str:
             else:
                 formatted_date = format_date(match, " ")
 
-            return formatted_date
+            return formatted_date.strip()
 
         return None
 
-    return date
+    return date.strip()
 
 
 def strip_titles(full_name: str) -> str:
@@ -152,9 +161,12 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
         get_case_summary, args=(AI,))
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
+    cleaned_cases.dropna(subset=['date'], inplace=True)
 
+    print(cleaned_cases["date"])
     cleaned_cases['date'] = pd.to_datetime(
-        cleaned_cases['date'], dayfirst=True)
+        cleaned_cases['date'], dayfirst=True, errors="coerce")
+    cleaned_cases.dropna(subset=['date'], inplace=True)
 
     return cleaned_cases
 

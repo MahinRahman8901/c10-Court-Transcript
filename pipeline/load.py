@@ -54,8 +54,8 @@ def upload_case_data(conn, cases_df):
 
     with conn.cursor() as cur:
         query = """
-                INSERT INTO court_case
-                    (case_no_id, title, judge_id, verdict, summary, transcript_date)
+                INSERT INTO transcript
+                    (case_no, title, judge_id, verdict, summary, transcript_date)
                 VALUES
                     (%s, %s, %s, %s, %s, %s)
                 """

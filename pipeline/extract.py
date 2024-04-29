@@ -30,7 +30,7 @@ def get_stored_titles(conn) -> list:
     """Returns the list of titles stored in the database"""
 
     with conn.cursor() as cur:
-        cur.execute("SELECT title FROM court_case;")
+        cur.execute("SELECT title FROM transcript;")
         result = cur.fetchall()
 
     return [row["title"] for row in result]
@@ -235,7 +235,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
         return df
 
     logging.info("No new cases found.")
-    return None
+    return pd.DataFrame()
 
 
 if __name__ == "__main__":
@@ -243,3 +243,5 @@ if __name__ == "__main__":
     df = extract_cases(1)
     if not df.empty:
         print(df[["title", "case_no", "date"]])
+    else:
+        print("empty")
