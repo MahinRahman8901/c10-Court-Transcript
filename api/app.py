@@ -3,10 +3,10 @@
 from os import environ as ENV
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from psycopg2 import OperationalError
 
-from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id
+from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id, filter_judges, filter_cases_by_judge, search_cases
 
 
 app = Flask(__name__)
@@ -23,8 +23,20 @@ def get_all_cases():
     """API that returns all the cases"""
 
     conn = get_db_connection(ENV)
-    cases = get_table(conn, 'court_case')
+    args = request.args.to_dict()
+    judge = args.get('judge_id', None)
+    search = args.get('search', None)
+
+    if judge:
+        cases = filter_cases_by_judge(conn, judge)
+
+    elif search:
+        cases = search_cases(conn, search)
+    else:
+        cases = get_table(conn, 'transcript')
+
     conn.close()
+
     if cases:
         return jsonify({'cases': cases}), 200
     else:
@@ -62,8 +74,15 @@ def get_all_judges():
     """API that returns all the judges"""
 
     conn = get_db_connection(ENV)
-    judge = get_table(conn, 'judge')
+    filters = request.args.to_dict()
+
+    if filters:
+        judge = filter_judges(conn, filters)
+
+    else:
+        judge = get_table(conn, 'judge')
     conn.close()
+
     if judge:
         return jsonify({'judges': judge}), 200
     else:

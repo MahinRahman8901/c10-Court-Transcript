@@ -21,9 +21,9 @@ def get_db_connection(config):
 
 def get_table(conn, table: str) -> list[RealDictRow]:
     '''Returns table information as a list.
-    Only accepts table names: circuit, court_case, judge and judge_type.'''
+    Only accepts table names: circuit, transcript, judge and judge_type.'''
 
-    if table in ['circuit', 'court_case', 'judge', 'judge_type']:
+    if table in ['circuit', 'transcript', 'judge', 'judge_type']:
 
         with conn.cursor() as cur:
 
@@ -61,7 +61,7 @@ def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
     try:
         with conn.cursor() as cur:
             cur.execute(
-                """SELECT * FROM court_case WHERE case_no_id = %s;""", (case_no,))
+                """SELECT * FROM transcript WHERE case_no_id = %s;""", (case_no,))
             case = cur.fetchone()
 
         return case
@@ -71,18 +71,36 @@ def get_case_by_case_no(conn, case_no: str) -> list[RealDictRow]:
         return None
 
 
-def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
-    '''Filters judges by circuit or judge_type.'''
+def filter_judges(conn, filters: dict) -> list[RealDictRow]:
+    '''Filters judges by circuit and/or judge_type.'''
 
-    if filter_by not in ['circuit_id', 'judge_type']:
-        raise ValueError(f"Cannot filter by {filter_by}")
+    if not all([f in ['circuit_id', 'judge_type_id'] for f in filters]):
+        raise ValueError(f"Invalid filter.")
 
     with conn.cursor() as cur:
 
-        cur.execute(sql.SQL("""SELECT * FROM judge WHERE {} = {}""").format(
-            sql.Identifier(filter_by), sql.SQL(f'{id}')))
+        if len(filters) == 1:
 
-        judges = cur.fetchall()
+            filter_by = list(filters.keys())[0]
+            print(filter_by)
+
+            cur.execute(sql.SQL("""SELECT * FROM judge WHERE {} = {}""").format(
+                sql.Identifier(filter_by), sql.SQL(filters[filter_by])))
+
+            judges = cur.fetchall()
+
+        elif len(filters) == 2:
+
+            cur.execute(sql.SQL("""SELECT * FROM judge WHERE {} = {} AND {} = {}""").format(
+                sql.Identifier('circuit_id'), sql.SQL(
+                    filters['circuit_id']),
+                sql.Identifier('judge_type_id'), sql.SQL(filters['judge_type_id'])))
+
+            judges = cur.fetchall()
+
+        else:
+            raise ValueError(
+                'Invalid filters for judges. Can only filter by circuit or judge type.')
 
     return judges
 
@@ -90,13 +108,13 @@ def filter_judges(conn, filter_by: str, id: str) -> list[RealDictRow]:
 def filter_cases_by_judge(conn, judge_id: int) -> list[RealDictRow]:
     '''Filters cases by judge id.'''
 
-    if not isinstance(judge_id, int):
+    if not judge_id.isnumeric():
         raise TypeError("Judge id must be an integer.")
 
     with conn.cursor() as cur:
 
         cur.execute(
-            sql.SQL(f"""SELECT * FROM court_case WHERE judge_id = {judge_id} """))
+            sql.SQL(f"""SELECT * FROM transcript WHERE judge_id = {judge_id} """))
 
         cases = cur.fetchall()
 
@@ -109,7 +127,7 @@ def search_cases(conn, search: str) -> list[RealDictRow]:
     with conn.cursor() as cur:
 
         cur.execute(sql.SQL(
-            "SELECT * FROM court_case WHERE title ILIKE '%{}%'").format(sql.SQL(search)))
+            "SELECT * FROM transcript WHERE title ILIKE '%{}%'").format(sql.SQL(search)))
 
         cases = cur.fetchall()
 
@@ -122,6 +140,7 @@ if __name__ == '__main__':
 
     CONN = get_db_connection(ENV)
 
-    result = search_cases(CONN, "Palmer")
+    result = filter_judges(CONN, {'circuit_id': '1',
+                                  'judge_type_id': '3'})
 
     print(result)
