@@ -45,6 +45,8 @@ def format_date(date: str, split_on: str) -> str:
     if len(components[2]) == 2:
         components[2] = '20' + components[2]
 
+    components[2] = components[:4]
+
     formatted_date = "/".join(components)
 
     return formatted_date
@@ -160,8 +162,10 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
     cleaned_cases.dropna(subset=['date'], inplace=True)
 
+    print(cleaned_cases["date"])
     cleaned_cases['date'] = pd.to_datetime(
-        cleaned_cases['date'], dayfirst=True, format='mixed')
+        cleaned_cases['date'], dayfirst=True, errors="coerce")
+    cleaned_cases.dropna(subset=['date'], inplace=True)
 
     return cleaned_cases
 
