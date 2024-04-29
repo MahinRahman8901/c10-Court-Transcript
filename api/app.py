@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request
 from psycopg2 import OperationalError
 
-from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id
+from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id, filter_judges
 
 
 app = Flask(__name__)
@@ -61,13 +61,16 @@ def get_all_circuits():
 def get_all_judges():
     """API that returns all the judges"""
 
-    args = request.args.to_dict()
-    circuit = args.get('circuit')
-    judge_type = args.get('judge_type')
-
     conn = get_db_connection(ENV)
-    judge = get_table(conn, 'judge')
+    filters = request.args.to_dict()
+
+    if filters:
+        judge = filter_judges(conn, filters)
+
+    else:
+        judge = get_table(conn, 'judge')
     conn.close()
+
     if judge:
         return jsonify({'judges': judge}), 200
     else:
