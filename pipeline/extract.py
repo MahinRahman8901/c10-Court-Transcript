@@ -30,7 +30,7 @@ def get_stored_titles(conn) -> list:
     """Returns the list of titles stored in the database"""
 
     with conn.cursor() as cur:
-        cur.execute("SELECT title FROM court_case;")
+        cur.execute("SELECT title FROM transcript;")
         result = cur.fetchall()
 
     return [row["title"] for row in result]
