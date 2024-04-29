@@ -3,7 +3,7 @@
 from os import environ as ENV
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 from psycopg2 import OperationalError
 
 from queries import get_db_connection, get_table, get_case_by_case_no, get_judge_by_id
@@ -23,7 +23,7 @@ def get_all_cases():
     """API that returns all the cases"""
 
     conn = get_db_connection(ENV)
-    cases = get_table(conn, 'court_case')
+    cases = get_table(conn, 'transcript')
     conn.close()
     if cases:
         return jsonify({'cases': cases}), 200
@@ -60,6 +60,10 @@ def get_all_circuits():
 @app.route('/judges', methods=['GET'])
 def get_all_judges():
     """API that returns all the judges"""
+
+    args = request.args.to_dict()
+    circuit = args.get('circuit')
+    judge_type = args.get('judge_type')
 
     conn = get_db_connection(ENV)
     judge = get_table(conn, 'judge')
