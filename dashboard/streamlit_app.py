@@ -82,6 +82,31 @@ appointed: {judge["appointed"]}
 """
 
 
+def get_data_from_db(conn: connect) -> pd.DataFrame:
+    """Returns all data from the database as a pd.DF."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT t.transcript_id, t.case_no, t.transcript_date, t.title, t.summary, t.verdict,
+                    j.judge_id, j.name AS judge, j.appointed, j.gender,
+                    jt.judge_type_id AS type_id, jt.type_name,
+                    c.circuit_id, c.name AS circuit_name
+                FROM transcript AS t
+                JOIN judge AS j
+                    ON t.judge_id = j.judge_id
+                JOIN judge_type AS jt
+                    ON j.judge_type_id = jt.judge_type_id
+                JOIN circuit AS c
+                    ON j.circuit_id = c.circuit_id
+                """
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    df = pd.DataFrame(rows)
+
+    return df
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -114,7 +139,8 @@ if __name__ == "__main__":
 
     with visualizations:
         # controls/filters (may need columns to organise the controls)
-        pass
+        data = get_data_from_db(conn)
+        st.dataframe(data)
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
