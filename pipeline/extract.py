@@ -131,10 +131,10 @@ def get_case_title(case_soup: BeautifulSoup) -> str:
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
 
-    if not path.exists(f"/{ENV['STORAGE_FOLDER']}"):
+    if not path.exists(f"{ENV['STORAGE_FOLDER']}"):
         makedirs(f"{ENV['STORAGE_FOLDER']}")
 
-    court_case["filepath"] = f"/{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
+    court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
     response = requests.get(court_case["pdf"])
     with open(f"{court_case['filepath']}", "wb") as f:
         f.write(response.content)
@@ -193,7 +193,7 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     return cases
 
 
-def extract_cases(pages: int) -> pd.DataFrame:
+def extract_cases(pages: int, start_page: int = 1, ) -> pd.DataFrame:
     """Given a number of pages, will return a DataFrame of all the cases from these pages."""
 
     load_dotenv()
@@ -204,7 +204,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     extracted_cases = []
 
-    for i in range(1, pages+1):
+    for i in range(start_page, pages+1):
         query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
         url = f"{ENV['BASE_URL']}/{query_extension}"
 
