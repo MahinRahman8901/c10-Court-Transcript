@@ -157,13 +157,13 @@ def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
 
     reader = PdfReader(court_case['filepath'])
-    first_page = reader.pages[0].extract_text().lower()
+    first_page = reader.pages[0].extract_text()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
 
     try:
         judge = re.search(
-            r"(?:before {0,}: {0,}\n{0,1} {0,1}\n{0,}|the honourable )([a-z .]*)", first_page)
+            r"(?:before {0,}: {0,}\n{0,1} {0,1}\n{0,}|the honourable )([a-z .]*)", first_page.lower())
         court_case["judge_name"] = judge.group(1).strip().replace('.', '')
 
         case_no = re.search(
