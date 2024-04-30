@@ -180,9 +180,12 @@ This will include all the env files and both AWS Access and Security Keys
 ### Architecture Diagram 
 
 #### Minimum Viable Product
-![Architecture Basic](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_basic.png?raw=true)
+![Architecture MVP](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_MVP.png?raw=true)
 
-#### Stretch Goals
+#### Stretched Goal
+![Architecture stretched](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_stretched.png?raw=true)
+
+#### Above and Beyond
 ![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
 
 
