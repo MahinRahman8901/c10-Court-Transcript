@@ -4,7 +4,7 @@ import streamlit as st
 
 
 def set_page_config():
-
+    '''This function sets up the necessary page config.'''
     st.set_page_config(page_title="Arelm Court Dashboard", page_icon="🏛", layout="wide",
                        initial_sidebar_state="expanded", menu_items=None)
 
@@ -12,7 +12,7 @@ def set_page_config():
 
 
 def get_sidebar():
-
+    '''This function programs a streamlit sidebar.'''
     with st.sidebar:
         st.title("Arelm")
         st.subheader("Court Data Dashboard")
