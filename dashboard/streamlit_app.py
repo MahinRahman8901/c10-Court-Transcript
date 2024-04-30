@@ -11,7 +11,7 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_gender_donut_chart
+from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart
 
 
 def extract_id_from_string(string: str) -> int:
@@ -92,6 +92,8 @@ if __name__ == "__main__":
     get_sidebar()
 
     st.altair_chart(get_gender_donut_chart(conn))
+
+    st.pyplot(get_waffle_chart(conn, '593'))
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:

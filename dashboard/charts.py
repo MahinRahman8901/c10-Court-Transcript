@@ -3,10 +3,12 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from psycopg2 import connect
+from psycopg2 import connect, sql
 from psycopg2.extras import RealDictCursor, RealDictRow
 from dotenv import load_dotenv
 from os import environ as ENV
+import matplotlib.pyplot as plt
+from pywaffle import Waffle
 
 
 def get_db_connection(config) -> connect:
@@ -34,16 +36,47 @@ def get_judge_genders(conn: connect) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def get_judge_verdicts(conn: connect, judge_id: str, verdict: str) -> int:
+    '''Returns the number of cases with a certain verdict.'''
+
+    with conn.cursor() as cur:
+        query = sql.SQL("""
+                SELECT transcript_id, verdict FROM transcript
+                WHERE verdict ILIKE '%{}%'
+                AND judge_id = {}
+                """).format(sql.SQL(verdict.lower()), sql.SQL(judge_id))
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return len(rows)
+
+
 def get_gender_donut_chart(conn: connect):
 
     data = get_judge_genders(conn)
 
     chart = alt.Chart(data).mark_arc(innerRadius=50).encode(
         theta='count',
-        color='gender:N'
+        color=alt.Color('gender').title('Gender')
     )
 
     return chart
+
+
+def get_waffle_chart(conn: connect, judge_id):
+
+    claimants = get_judge_verdicts(conn, judge_id, 'claimant')
+    defendants = get_judge_verdicts(conn, judge_id, 'defendant')
+
+    fig = plt.figure(
+        FigureClass=Waffle,
+        rows=5,  # Either rows or columns could be omitted
+        # Pass a list of integers to values
+        figsize=(20, 5),
+        values={'Claimants': claimants, 'Defendants': defendants}
+    )
+
+    return fig
 
 
 if __name__ == "__main__":
@@ -52,6 +85,6 @@ if __name__ == "__main__":
 
     CONN = get_db_connection(ENV)
 
-    result = get_judge_genders(CONN)
+    result = get_judge_verdicts(CONN, '3', 'defendant')
 
     print(result)
