@@ -167,8 +167,8 @@ def parse_pdf(court_case: dict):
         court_case["judge_name"] = judge.group(1).strip().replace('.', '')
 
         case_no = re.search(
-            r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
-        court_case["case_no"] = case_no.group(1).strip()
+            r"([A-Z]{2} ?[-| ] ?[0-9]{4} ?[-| ] ?[0-9]{6})", first_page)
+        court_case["case_no"] = case_no.group(1).strip().replace(" ", "-")
 
         court_date = re.search(
             r"(?<=Date: )(.*)", first_page)
@@ -178,7 +178,8 @@ def parse_pdf(court_case: dict):
         if not court_date:
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
-        court_case["date"] = court_date.group(1).strip()
+        court_case["date"] = court_date.group(1).strip().replace(
+            "st", '').replace("nd", "").replace("rd", "").replace("th", "")
 
         court_case["introduction"] = second_page
 
@@ -248,6 +249,6 @@ if __name__ == "__main__":
 
     df = extract_cases(101, 101)
     if not df.empty:
-        print(df[["title", "case_no", "date"]])
+        print(df[["judge_name", "title", "case_no", "date"]])
     else:
         print("empty")
