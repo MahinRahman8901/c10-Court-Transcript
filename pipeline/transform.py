@@ -80,10 +80,10 @@ def clean_date(date: str) -> str:
 
 def strip_titles(full_name: str) -> str:
     '''Strips all titles so we are just left with the name.'''
+    print(full_name)
 
-    extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable',
-              'his', 'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame', 'hhj',
-              'm r', 'cbe', 'qc']
+    extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable', 'his',
+              'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame', 'hhj', 'm', 'r', 'cbe', 'qc']
 
     components = full_name.split(" ")
 
@@ -93,7 +93,12 @@ def strip_titles(full_name: str) -> str:
         if part.lower() not in extras:
             judge_name.append(part)
 
-    return ' '.join(judge_name).upper()
+    extracted_name = ' '.join(judge_name).upper()
+
+    if 'SITTING' in extracted_name:
+        extracted_name = extracted_name.split("SITTING")[0]
+
+    return extracted_name.strip()
 
 
 def standardize_case_no(case_no: str):
