@@ -162,18 +162,9 @@ def parse_pdf(court_case: dict):
     last_page = reader.pages[-1].extract_text()
 
     try:
-        judge = re.search(r"(?<=Before :\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before  : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
-        court_case["judge_name"] = judge.group(1).strip()
+        judge = re.search(
+            r"(?:before {0,}: {0,}\n{0,1} {0,1}\n{0,}|the honourable )([a-z .]*)", first_page)
+        court_case["judge_name"] = judge.group(1).strip().replace('.', '')
 
         case_no = re.search(
             r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
@@ -255,7 +246,7 @@ def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(1)
+    df = extract_cases(101, 101)
     if not df.empty:
         print(df[["title", "case_no", "date"]])
     else:
