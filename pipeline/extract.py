@@ -157,7 +157,7 @@ def parse_pdf(court_case: dict):
     """Extracts judge name, case number, date, introduction, and conclusion from pdf."""
 
     reader = PdfReader(court_case['filepath'])
-    first_page = reader.pages[0].extract_text()
+    first_page = reader.pages[0].extract_text().lower()
     second_page = reader.pages[1].extract_text()
     last_page = reader.pages[-1].extract_text()
 
