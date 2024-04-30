@@ -59,7 +59,7 @@ def clean_date(date: str) -> str:
     if not is_correct_date_format(date):
 
         extracted_date = re.search(
-            r"\d\d? ?[A-Za-z]+ \d\d(\d\d)?|\d/\d\d/\d\d\d?\d?", date)
+            r"\d\d? [A-Za-z]+ \d\d(\d\d)?|\d/\d\d/\d\d\d?\d?", date)
 
         if extracted_date:
 
@@ -175,7 +175,7 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
 if __name__ == "__main__":
 
-    cases = extract_cases(1)
+    cases = extract_cases(101, 101)
 
     if not cases.empty:
 
