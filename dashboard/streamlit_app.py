@@ -5,24 +5,13 @@ from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from psycopg2 import connect
-from psycopg2.extras import RealDictCursor
 import pandas as pd
 import altair as alt
 from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-
-
-def get_db_connection(config) -> connect:
-    """Returns db connection."""
-
-    return connect(dbname=config["DB_NAME"],
-                   user=config["DB_USER"],
-                   password=config["DB_PASSWORD"],
-                   host=config["DB_HOST"],
-                   port=config["DB_PORT"],
-                   cursor_factory=RealDictCursor)
+from charts import get_db_connection, get_gender_donut_chart
 
 
 def extract_id_from_string(string: str) -> int:
@@ -101,6 +90,8 @@ if __name__ == "__main__":
     set_page_config()
 
     get_sidebar()
+
+    st.altair_chart(get_gender_donut_chart(conn))
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
