@@ -179,7 +179,7 @@ def parse_pdf(court_case: dict):
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
         court_case["date"] = court_date.group(1).strip().replace(
-            "st", '').replace("nd", "").replace("rd", "").replace("th", "")
+            "st", '1').replace("nd", "").replace("rd", "").replace("th", "")
 
         court_case["introduction"] = second_page
 
@@ -247,7 +247,7 @@ def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(101, 101)
+    df = extract_cases(30, 15)
     if not df.empty:
         print(df[["judge_name", "title", "case_no", "date"]])
     else:
