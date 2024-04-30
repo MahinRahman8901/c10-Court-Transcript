@@ -141,7 +141,7 @@ def download_pdfs(court_case: dict) -> None:
         with open(f"{court_case['filepath']}", "wb") as f:
             f.write(response.content)
         return
-    except:
+    except requests.exceptions.MissingSchema:
         pass
 
     try:
@@ -149,8 +149,8 @@ def download_pdfs(court_case: dict) -> None:
             f"{ENV['BASE_URL']}{court_case['pdf']}", timeout=10)
         with open(f"{court_case['filepath']}", "wb") as f:
             f.write(response.content)
-    except:
-        pass
+    except requests.exceptions.MissingSchema:
+        court_case.clear()
 
 
 def parse_pdf(court_case: dict):
@@ -239,7 +239,8 @@ def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
 
     for case_data in extracted_cases:
         download_pdfs(case_data)
-        parse_pdf(case_data)
+        if case_data:
+            parse_pdf(case_data)
 
     extracted_cases = list(filter(None, extracted_cases))
 
