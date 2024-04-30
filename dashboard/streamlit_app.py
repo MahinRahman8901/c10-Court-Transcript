@@ -11,6 +11,8 @@ import altair as alt
 from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
+from layout import set_page_config, get_sidebar
+
 
 def get_db_connection(config) -> connect:
     """Returns db connection."""
@@ -96,13 +98,9 @@ if __name__ == "__main__":
     load_dotenv()
     conn = get_db_connection(ENV)
 
-    st.set_page_config(page_title="Arelm Court Dashboard", page_icon="🏛", layout="wide",
-                       initial_sidebar_state="expanded", menu_items=None)
+    set_page_config()
 
-    with st.sidebar:
-        st.title("Arelm")
-        st.subheader("lorem ipsum something about Arelm and the dashboard")
-        st.text("")
+    get_sidebar()
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
