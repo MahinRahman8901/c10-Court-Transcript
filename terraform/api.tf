@@ -1,6 +1,6 @@
-resource "aws_security_group" "court-dashboard-sec-group" {
-  name   = "c10-court-dashbord-sg"
-  description = "Allow traffic into court dashboard"
+resource "aws_security_group" "court-api-sec-group" {
+  name   = "c10-court-api-sg"
+  description = "Allow traffic into court api"
   vpc_id = data.aws_vpc.cohort_10_vpc.id
 
   ingress {
@@ -85,15 +85,15 @@ resource "aws_ecs_task_definition" "court-api-task-def" {
   ])
 }
 
-resource "aws_ecs_service" "court-dashboard-service" {
-    name = "c10-court-dash-service"
+resource "aws_ecs_service" "court-api-service" {
+    name = "c10-court-api-service"
     cluster = data.aws_ecs_cluster.c10-ecs-cluster.cluster_name
     task_definition = aws_ecs_task_definition.court-api-task-def.arn
     desired_count = 1
     launch_type = "FARGATE"
     network_configuration {
       subnets = ["subnet-0f1bc89d0670672b5", "subnet-010c8f9ace38ac103", "subnet-05a01546985e339a6"]
-      security_groups = [aws_security_group.court-dashboard-sec-group.id]
+      security_groups = [aws_security_group.court-api-sec-group.id]
       assign_public_ip = true
     }
 }
