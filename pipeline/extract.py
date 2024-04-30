@@ -135,9 +135,22 @@ def download_pdfs(court_case: dict) -> None:
         makedirs(f"{ENV['STORAGE_FOLDER']}")
 
     court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
-    response = requests.get(court_case["pdf"])
-    with open(f"{court_case['filepath']}", "wb") as f:
-        f.write(response.content)
+
+    try:
+        response = requests.get(court_case["pdf"], timeout=10)
+        with open(f"{court_case['filepath']}", "wb") as f:
+            f.write(response.content)
+        return
+    except:
+        pass
+
+    try:
+        response = requests.get(
+            f"{ENV['BASE_URL']}{court_case['pdf']}", timeout=10)
+        with open(f"{court_case['filepath']}", "wb") as f:
+            f.write(response.content)
+    except:
+        pass
 
 
 def parse_pdf(court_case: dict):
@@ -193,7 +206,7 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     return cases
 
 
-def extract_cases(pages: int, start_page: int = 1, ) -> pd.DataFrame:
+def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
     """Given a number of pages, will return a DataFrame of all the cases from these pages."""
 
     load_dotenv()
@@ -204,7 +217,7 @@ def extract_cases(pages: int, start_page: int = 1, ) -> pd.DataFrame:
 
     extracted_cases = []
 
-    for i in range(start_page, pages+1):
+    for i in range(start_page, end_page+1):
         query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
         url = f"{ENV['BASE_URL']}/{query_extension}"
 
