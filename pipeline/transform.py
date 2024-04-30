@@ -59,7 +59,7 @@ def clean_date(date: str) -> str:
     if not is_correct_date_format(date):
 
         extracted_date = re.search(
-            r"\d\d? [A-Za-z]+ \d\d(\d\d)?|\d/\d\d/\d\d\d?\d?", date)
+            r"\d\d? ?[A-Za-z]+ \d\d(\d\d)?|\d/\d\d/\d\d\d?\d?", date)
 
         if extracted_date:
 
@@ -155,11 +155,11 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
     clean_data(cases)
 
-    cases['verdict'] = cases['conclusion'].apply(
-        get_case_verdict, args=(AI,))
+    # cases['verdict'] = cases['conclusion'].apply(
+    #     get_case_verdict, args=(AI,))
 
-    cases['summary'] = cases['introduction'].apply(
-        get_case_summary, args=(AI,))
+    # cases['summary'] = cases['introduction'].apply(
+    #     get_case_summary, args=(AI,))
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
 
@@ -180,3 +180,4 @@ if __name__ == "__main__":
     if not cases.empty:
 
         transformed_cases = transform_and_apply_gpt(cases)
+        print(transformed_cases[["title", "judge_name", "date"]])
