@@ -160,11 +160,11 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
     clean_data(cases)
 
-    # cases['verdict'] = cases['conclusion'].apply(
-    #     get_case_verdict, args=(AI,))
+    cases['verdict'] = cases['conclusion'].apply(
+        get_case_verdict, args=(AI,))
 
-    # cases['summary'] = cases['introduction'].apply(
-    #     get_case_summary, args=(AI,))
+    cases['summary'] = cases['introduction'].apply(
+        get_case_summary, args=(AI,))
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
 
@@ -180,7 +180,7 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
 if __name__ == "__main__":
 
-    cases = extract_cases(101, 101)
+    cases = extract_cases(1)
 
     if not cases.empty:
 
