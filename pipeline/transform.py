@@ -124,7 +124,7 @@ def get_case_verdict(conclusion: str, text_generator: OpenAI) -> str:
     """Extract case verdict as a single word"""
 
     response = text_generator.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use this one for testing
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a solicitor reading case conclusion statements."},
             {"role": "user", "content": f"For the given case: '{conclusion}'. State in one word and no punctuation, in favour of whom did the judge rule, claimant or defendant?"},
@@ -140,7 +140,7 @@ def get_case_summary(introduction: str, text_generator: OpenAI) -> str:
     user_prompt = f"Given this introduction: '{introduction}'. Summarise the introduction to a few lines."
 
     response = text_generator.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use this one for testing
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a solicitor reading case introduction statements."},
             {"role": "user", "content": user_prompt},
