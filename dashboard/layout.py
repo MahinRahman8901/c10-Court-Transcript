@@ -24,6 +24,8 @@ def get_sidebar():
             "All case law files", "https://caselaw.nationalarchives.gov.uk/")
         st.link_button("All judges in the UK",
                        "https://www.judiciary.uk/about-the-judiciary/who-are-the-judiciary/list-of-members-of-the-judiciary/")
+        st.subheader("Meet the team")
+        st.link_button("Linktree", "https: // linktr.ee/C10_Arelm")
 
 
 if __name__ == "__main__":
