@@ -13,7 +13,7 @@ def main():
     Upload case data to RDS
     """
 
-    cases = extract_cases(25)
+    cases = extract_cases(1)
 
     if not cases.empty:
         transformed_cases = transform_and_apply_gpt(cases)
