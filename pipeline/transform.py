@@ -82,7 +82,7 @@ def strip_titles(full_name: str) -> str:
     '''Strips all titles so we are just left with the name.'''
 
     extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable',
-              'his', 'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame']
+              'his', 'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame', 'hhj']
 
     components = full_name.split(" ")
 
