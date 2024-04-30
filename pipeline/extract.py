@@ -162,22 +162,13 @@ def parse_pdf(court_case: dict):
     last_page = reader.pages[-1].extract_text()
 
     try:
-        judge = re.search(r"(?<=Before :\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before  : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
-        court_case["judge_name"] = judge.group(1).strip()
+        judge = re.search(
+            r"(?:before {0,}: {0,}\n{0,1} {0,1}\n{0,}|the honourable )([a-z .]*)", first_page.lower())
+        court_case["judge_name"] = judge.group(1).strip().replace('.', '')
 
         case_no = re.search(
-            r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
-        court_case["case_no"] = case_no.group(1).strip()
+            r"([A-Z]{2} ?[-| ] ?[0-9]{4} ?[-| ] ?[0-9]{6})", first_page)
+        court_case["case_no"] = case_no.group(1).strip().replace(" ", "-")
 
         court_date = re.search(
             r"(?<=Date: )(.*)", first_page)
@@ -187,7 +178,8 @@ def parse_pdf(court_case: dict):
         if not court_date:
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
-        court_case["date"] = court_date.group(1).strip()
+        court_case["date"] = court_date.group(1).strip().replace(
+            "1st", '1').replace("nd", "").replace("rd", "").replace("th", "")
 
         court_case["introduction"] = second_page
 
@@ -255,8 +247,8 @@ def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
 
 if __name__ == "__main__":
 
-    df = extract_cases(1)
+    df = extract_cases(30, 15)
     if not df.empty:
-        print(df[["title", "case_no", "date"]])
+        print(df[["judge_name", "title", "case_no", "date"]])
     else:
         print("empty")
