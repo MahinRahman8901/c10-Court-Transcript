@@ -80,7 +80,6 @@ def clean_date(date: str) -> str:
 
 def strip_titles(full_name: str) -> str:
     '''Strips all titles so we are just left with the name.'''
-    print(full_name)
 
     extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable', 'his',
               'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame', 'hhj', 'm', 'r', 'cbe', 'qc']
