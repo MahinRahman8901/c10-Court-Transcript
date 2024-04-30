@@ -179,7 +179,7 @@ def parse_pdf(court_case: dict):
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
         court_case["date"] = court_date.group(1).strip().replace(
-            "st", '1').replace("nd", "").replace("rd", "").replace("th", "")
+            "1st", '1').replace("nd", "").replace("rd", "").replace("th", "")
 
         court_case["introduction"] = second_page
 
