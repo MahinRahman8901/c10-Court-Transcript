@@ -36,7 +36,7 @@ Our automated data pipeline will:
 - Deploy onto a dashboard to view all metrics
 - Create an API that allows for anyone to view court cases and judge information
 
-### Visualization
+### Visualization (Dashboard)
 
 - XXXXXX.
 - XXXXXX.
@@ -44,8 +44,8 @@ Our automated data pipeline will:
 
 ### API
 
-- XXXXXX.
-- XXXXXX.
+- View multiple end points, that allow for the general public to view the case information and judge information
+- Users are able to query the api, and take data and query it with however they want.
 
 ## Overview
 
@@ -95,6 +95,8 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ## Deployment
 
+## Dashboard
+
 Access to Dashboard via ECS: xxxxxx
 
 ### Features
@@ -110,6 +112,23 @@ Access to Dashboard via ECS: xxxxxx
 ### Data Sources
 - **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
 
+## API
+
+Access to API via ECS: http://3.8.5.146:5000
+
+### Features
+- **View Endpoints:** On the route page you are able to view all the endpoints and filters, as well as what each one does.
+- **Querying:** Users are able to access our api and query it with howver they see fit.
+- **API Intergration:** USers are able to integrate the api within their own code and have access to the entire database.
+
+### Usage
+- Accessing the database via querying API.
+- Filtering through cases and judges.
+
+
+### Data Sources
+- **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
+
 ## Terraform
 
 This repository contains Terraform scripts to provision Lambda functions on AWS for various purposes related to managing plant data.
@@ -118,9 +137,19 @@ This repository contains Terraform scripts to provision Lambda functions on AWS 
   - This file will spin up the AWS services using the access and secret key.
 - Lambda Functions for running the pipeline `pipeline.tf`
   - This file will create a lambda function which will run the whole pipeline file itself.
-- Lambda Functions for RDS Insertion `eventbridge.tf`
+- Lambda Functions for RDS Insertion `pipeline_eventbridge.tf`
   - This file will create a lambda function that spins up the event bridges that connect itself to the lambda function.
- 
+- Lambda Functions for RDS Insertion `api.tf`
+  - This file will create a ecs service that will run the api python task as a constant service, that can be accessed anywhere.
+- Lambda Functions for RDS Insertion `dashboard.tf`
+  - This file will create a ecs service that will run the dashboard python task as a constant service, that can be accessed anywhere.
+- Lambda Functions for RDS Insertion `judges.tf`
+  - This file will create a lambda function for the judges.
+- Lambda Functions for RDS Insertion `judges_eventbridge.tf`
+  - This file will create a lambda function that spins up the event bridges that connect itself to the lambda function.
+- Lambda Functions for RDS Insertion `variables.tf`
+  - This file will containt all the important variables that are needed, in order for the program to run and these can be found in the dependencies below. 
+  
 ### Dependencies
 
 There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work
@@ -177,7 +206,7 @@ This will include all the env files and both AWS Access and Security Keys
 
 ## Diagrams
 
-### Architecture Diagram 
+## Architecture Diagram 
 
 #### Minimum Viable Product
 ![Architecture MVP](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_MVP.png?raw=true)
@@ -187,6 +216,10 @@ This will include all the env files and both AWS Access and Security Keys
 
 #### Above and Beyond
 ![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
+
+## ERD
+
+![ERD Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/MAIN%20ERD.png?raw=true)
 
 
 ## Setup
