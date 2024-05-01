@@ -57,6 +57,20 @@ The pipeline script consists of several steps:
 
 3. **Load**: Inserts the cleaned data into a Relational Database in this case we used PSQL. All data is inserted into the correct tables that can be viewed by running the bash scripts (See Bash Database Scripts Below)
 
+## ENV Variables
+
+| ENV Variable Name           | Description               |
+|-------------------------|-------------------------------|
+| DB_USER                 | Database User                 |
+| DB_PASSWORD             | Database Password             |
+| DB_HOST                 | Database Host                 |
+| DB_PORT                 | Database Port                 |
+| DB_NAME                 | Database Name                 |
+| BASE_URL                | Website URL                   |
+| COMM_QUERY_EXTENSION    | Commercial Court Query        |
+| STORAGE_FOLDER          | Storage Folder Name           |
+| OPENAI_API_KEY          | GPT API Key                   |
+
 ## Pipeline Testing
 
 We have also ensured to test each part of the pipeline to ensure that they work and these can be viewed below
@@ -64,6 +78,11 @@ We have also ensured to test each part of the pipeline to ensure that they work 
 - `test_extract.py` -> | Tests dataframe creation | Tests the URL with the cases | Tests the index to infinity function |
 - `test_transform.py` -> | Tests date returns correct bool | Tests date formats correctly w/ Parametrisation | Tests if judge titles are stripped | Tests if case numbers have been standardised w/ Parametrisation
 - `test_load.py` -> xxxxxx
+
+### How to Test
+In order to test the files, you firstly must make sure that you `pip install -r requirements.txt` in order to have access to `pytest`. Once this has been done you can run:
+- `pytest test_xxxx` -> This will run the pytest on the specific file itself.
+- `pytest` -> This will run pytest on every test file within the directory you are currently in.
 
 ## Data Cleaning
 
