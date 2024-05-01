@@ -191,6 +191,7 @@ def fill_ids(judges: pd.DataFrame,
              circuits: pd.DataFrame,
              stored_judges: pd.DataFrame) -> list[dict]:
     """Converts judge type and circuit strings to corresponding ids in db.
+    Checks if judge currently exists in db, removes from list if so.
     Returns transformed judge data as pd.DF."""
 
     judges = judges.join(types.set_index("type_name"), "type", "left"
@@ -203,15 +204,6 @@ def fill_ids(judges: pd.DataFrame,
 
     columns = list(zip(judges['name'], judges['gender'], judges['appointment'],
                        judges['judge_type_id'], judges['circuit_id']))
-
-    print(len(columns))
-
-    # for item in columns:
-    #     if (item[0] in stored_judges["name"].values) and (item[2] in [str(date) for date in stored_judges["appointed"].values]):
-    #         columns.remove(item)
-    #     else:
-    #         print("Not found")
-    #         print(item[0], item[2])
 
     already_stored = []
     i = 0
@@ -279,14 +271,10 @@ def main():
     judges = fill_ids(judges, judge_types, circuits, stored_judges)
 
     if judges:
-        # print(judges[:10])
-        print(len(judges))
+        logger.info("===== uploading to database... =====")
+        upload_data(conn, judges)
     else:
-        print("No new judges!")
-
-    # logger.info("===== uploading to database... =====")
-    # if judges:
-    #     upload_data(conn, judges)
+        logger.info("===== no new judges... =====")
 
 
 def handler(event, context):
