@@ -70,8 +70,7 @@ def get_waffle_chart(conn: connect, judge_id):
 
     fig = plt.figure(
         FigureClass=Waffle,
-        rows=5,  # Either rows or columns could be omitted
-        # Pass a list of integers to values
+        rows=5,
         figsize=(20, 5),
         values={'Claimants': claimants, 'Defendants': defendants}
     )
