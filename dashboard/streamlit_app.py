@@ -19,7 +19,8 @@ def extract_id_from_string(string: str) -> int:
     return int(re.match(r"\((\d+)\)", string).group(1))
 
 
-def get_judge_selection(conn: connect) -> st.selectbox:
+# ========== FUNCTIONS: SELECTIONS ==========
+def get_judge_selection(conn: connect, key: str) -> st.selectbox:
     """Returns a Streamlit selectbox for individual judges."""
 
     with conn.cursor() as cur:
@@ -32,13 +33,66 @@ def get_judge_selection(conn: connect) -> st.selectbox:
 
     rows = [item["judge"] for item in rows]
 
-    judge_selection = st.selectbox(placeholder="select a judge",
+    judge_selection = st.selectbox(key=key,
+                                   placeholder="Select a judge",
                                    options=rows,
                                    index=None,
                                    label="judge selection",
                                    label_visibility="hidden")
 
     return judge_selection
+
+
+def get_circuit_selection(conn: connect, key: str) -> st.multiselect:
+    """Returns a Streamlit multiselect for circuits."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT name AS circuit
+                FROM circuit
+                """
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    rows = [item["circuit"] for item in rows]
+
+    judge_selection = st.multiselect(key=key,
+                                     placeholder="select circuit(s)",
+                                     options=rows,
+                                     label="judge selection",
+                                     label_visibility="hidden",)
+
+    return judge_selection
+
+
+def get_gender_selection(conn: connect, key: str) -> st.selectbox:
+    """Returns a Streamlit selectbox for genders."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT DISTINCT gender
+                FROM judge
+                """
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    rows = [item["gender"] for item in rows]
+
+    judge_selection = st.selectbox(key=key,
+                                   placeholder="Select a gender",
+                                   options=rows,
+                                   index=None,
+                                   label="gender selection",
+                                   label_visibility="hidden")
+
+    return judge_selection
+
+
+def get_date_selection() -> st.date_input:
+    """"""
+    return st.date_input(label, value="default_value_today", min_value=None, max_value=None, key=None, help=None, on_change=None, args=None, kwargs=None, *, format="YYYY/MM/DD", disabled=False, label_visibility="visible")
+
+# ========== FUNCTIONS: DATABASE ===========
 
 
 def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
@@ -85,23 +139,24 @@ appointed: {judge["appointed"]}
 if __name__ == "__main__":
 
     load_dotenv()
-    conn = get_db_connection(ENV)
+    CONN = get_db_connection(ENV)
 
     set_page_config()
 
     get_sidebar()
 
-    st.altair_chart(get_gender_donut_chart(conn))
+    st.altair_chart(get_gender_donut_chart(CONN))
 
-    st.pyplot(get_waffle_chart(conn, '593'))
+    st.pyplot(get_waffle_chart(CONN, '593'))
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
         # judge profile
-        judge_profile_selection = get_judge_selection(conn)
+        judge_profile_selection = get_judge_selection(
+            CONN, "judge_profile_selection")
         if judge_profile_selection:
             id = extract_id_from_string(judge_profile_selection)
-            judge, cases = get_judge_from_db(conn, id)
+            judge, cases = get_judge_from_db(CONN, id)
             profile = write_judge_profile(judge)
             st.write(profile)
             st.dataframe(cases, hide_index=True,
@@ -114,7 +169,16 @@ if __name__ == "__main__":
 
     with visualizations:
         # controls/filters (may need columns to organise the controls)
-        pass
+        controls = st.columns(5)
+        with controls[0]:
+            viz_judge_selection = get_judge_selection(
+                CONN, "viz_judge_selectbox")
+        with controls[1]:
+            viz_circuit_selection = get_circuit_selection(
+                CONN, "viz_circuit_selection")
+        with controls[2]:
+            viz_gender_selection = get_gender_selection(
+                CONN, "viz_gender_selection")
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
