@@ -1,10 +1,11 @@
 '''Script to standardize and clean data as well as extracting summaries and verdicts using GPT.'''
+from os import environ as ENV
+
 import re
 import pandas as pd
-
-from os import environ as ENV
 from dotenv import load_dotenv
 from openai import OpenAI
+
 from extract import extract_cases
 
 
@@ -25,6 +26,9 @@ def format_date(date: str, split_on: str) -> str:
 
     components = date.split(split_on)
 
+    if int(components[0]) == 0:
+        components[0] = '01'
+
     if len(components[0]) == 1:
         components[0] = '0' + components[0]
 
@@ -38,6 +42,11 @@ def format_date(date: str, split_on: str) -> str:
                   'November': '11', 'December': '12'}
 
         components[1] = months[components[1]]
+
+    if len(components[2]) == 2:
+        components[2] = '20' + components[2]
+    if len(components[2]) > 4:
+        components[2] = components[:4]
 
     formatted_date = "/".join(components)
 
@@ -62,18 +71,18 @@ def clean_date(date: str) -> str:
             else:
                 formatted_date = format_date(match, " ")
 
-            return formatted_date
+            return formatted_date.strip()
 
         return None
 
-    return date
+    return date.strip()
 
 
 def strip_titles(full_name: str) -> str:
     '''Strips all titles so we are just left with the name.'''
 
-    extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable',
-              'his', 'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame']
+    extras = ['mr', 'mrs', 'miss', 'ms', 'sir', 'justice', 'the', 'honourable', 'his',
+              'her', 'honour', 'hon', 'kc', 'dbe', 'judge', 'dame', 'hhj', 'm', 'r', 'cbe', 'qc']
 
     components = full_name.split(" ")
 
@@ -83,7 +92,12 @@ def strip_titles(full_name: str) -> str:
         if part.lower() not in extras:
             judge_name.append(part)
 
-    return ' '.join(judge_name).upper()
+    extracted_name = ' '.join(judge_name).upper()
+
+    if 'SITTING' in extracted_name:
+        extracted_name = extracted_name.split("SITTING")[0]
+
+    return extracted_name.strip()
 
 
 def standardize_case_no(case_no: str):
@@ -110,7 +124,7 @@ def get_case_verdict(conclusion: str, text_generator: OpenAI) -> str:
     """Extract case verdict as a single word"""
 
     response = text_generator.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use this one for testing
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a solicitor reading case conclusion statements."},
             {"role": "user", "content": f"For the given case: '{conclusion}'. State in one word and no punctuation, in favour of whom did the judge rule, claimant or defendant?"},
@@ -126,7 +140,7 @@ def get_case_summary(introduction: str, text_generator: OpenAI) -> str:
     user_prompt = f"Given this introduction: '{introduction}'. Summarise the introduction to a few lines."
 
     response = text_generator.chat.completions.create(
-        model="gpt-3.5-turbo",  # Use this one for testing
+        model="gpt-3.5-turbo",
         messages=[
             {"role": "system", "content": "You are a solicitor reading case introduction statements."},
             {"role": "user", "content": user_prompt},
@@ -153,8 +167,12 @@ def transform_and_apply_gpt(cases: pd.DataFrame):
 
     cleaned_cases = cases.drop(columns=['introduction', 'conclusion'])
 
+    cleaned_cases.dropna(subset=['date'], inplace=True)
+
     cleaned_cases['date'] = pd.to_datetime(
-        cleaned_cases['date'], dayfirst=True)
+        cleaned_cases['date'], dayfirst=True, errors="coerce", format="%d/%m/%Y")
+
+    cleaned_cases.dropna(subset=['date'], inplace=True)
 
     return cleaned_cases
 
@@ -166,3 +184,4 @@ if __name__ == "__main__":
     if not cases.empty:
 
         transformed_cases = transform_and_apply_gpt(cases)
+        print(transformed_cases[["title", "judge_name", "date"]])

@@ -30,7 +30,7 @@ def get_stored_titles(conn) -> list:
     """Returns the list of titles stored in the database"""
 
     with conn.cursor() as cur:
-        cur.execute("SELECT title FROM court_case;")
+        cur.execute("SELECT title FROM transcript;")
         result = cur.fetchall()
 
     return [row["title"] for row in result]
@@ -131,13 +131,26 @@ def get_case_title(case_soup: BeautifulSoup) -> str:
 def download_pdfs(court_case: dict) -> None:
     """Downloads a pdf from the link given in the court_case dict."""
 
-    if not path.exists(f"/{ENV['STORAGE_FOLDER']}"):
+    if not path.exists(f"{ENV['STORAGE_FOLDER']}"):
         makedirs(f"{ENV['STORAGE_FOLDER']}")
 
-    court_case["filepath"] = f"/{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
-    response = requests.get(court_case["pdf"])
-    with open(f"{court_case['filepath']}", "wb") as f:
-        f.write(response.content)
+    court_case["filepath"] = f"{ENV['STORAGE_FOLDER']}/{court_case['title']}.pdf"
+
+    try:
+        response = requests.get(court_case["pdf"], timeout=10)
+        with open(f"{court_case['filepath']}", "wb") as f:
+            f.write(response.content)
+        return
+    except (requests.exceptions.MissingSchema, requests.exceptions.ReadTimeout):
+        pass
+
+    try:
+        response = requests.get(
+            f"{ENV['BASE_URL']}{court_case['pdf']}", timeout=10)
+        with open(f"{court_case['filepath']}", "wb") as f:
+            f.write(response.content)
+    except (requests.exceptions.MissingSchema, requests.exceptions.ReadTimeout):
+        court_case.clear()
 
 
 def parse_pdf(court_case: dict):
@@ -149,22 +162,13 @@ def parse_pdf(court_case: dict):
     last_page = reader.pages[-1].extract_text()
 
     try:
-        judge = re.search(r"(?<=Before :\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before  : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before : \n \n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=Before:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(?<=BEFORE:\n)([A-Z a-z]*)", first_page)
-        if not judge:
-            judge = re.search(r"(THE HONOURABLE [A-Z a-z]*)", first_page)
-        court_case["judge_name"] = judge.group(1).strip()
+        judge = re.search(
+            r"(?:before {0,}: {0,}\n{0,1} {0,1}\n{0,}|the honourable )([a-z .]*)", first_page.lower())
+        court_case["judge_name"] = judge.group(1).strip().replace('.', '')
 
         case_no = re.search(
-            r"([A-Z]{2} ?- ?[0-9]{4} ?- ?[0-9]{6})", first_page)
-        court_case["case_no"] = case_no.group(1).strip()
+            r"([A-Z]{2} ?[-| ] ?[0-9]{4} ?[-| ] ?[0-9]{6})", first_page)
+        court_case["case_no"] = case_no.group(1).strip().replace(" ", "-")
 
         court_date = re.search(
             r"(?<=Date: )(.*)", first_page)
@@ -174,7 +178,8 @@ def parse_pdf(court_case: dict):
         if not court_date:
             court_date = re.search(
                 r"([\w]{0,},? ?[0-9]{1,2} [A-Z|a-z]+ [0-9]{2,4})|([0-9]{2}[/][0-9]{2}[/][0-9]{2,4})", first_page)
-        court_case["date"] = court_date.group(1).strip()
+        court_case["date"] = court_date.group(1).strip().replace(
+            "1st", '1').replace("nd", "").replace("rd", "").replace("th", "")
 
         court_case["introduction"] = second_page
 
@@ -193,8 +198,9 @@ def create_dataframe(court_cases: list[dict]) -> pd.DataFrame:
     return cases
 
 
-def extract_cases(pages: int) -> pd.DataFrame:
-    """Given a number of pages, will return a DataFrame of all the cases from these pages."""
+def extract_cases(end_page: int, start_page: int = 1, ) -> pd.DataFrame:
+    """Given a range of pages (default from 1 - end_page), 
+    will return a DataFrame of all the cases from these pages."""
 
     load_dotenv()
 
@@ -204,7 +210,7 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     extracted_cases = []
 
-    for i in range(1, pages+1):
+    for i in range(start_page, end_page+1):
         query_extension = ENV['COMM_QUERY_EXTENSION'] + str(i)
         url = f"{ENV['BASE_URL']}/{query_extension}"
 
@@ -226,7 +232,8 @@ def extract_cases(pages: int) -> pd.DataFrame:
 
     for case_data in extracted_cases:
         download_pdfs(case_data)
-        parse_pdf(case_data)
+        if case_data:
+            parse_pdf(case_data)
 
     extracted_cases = list(filter(None, extracted_cases))
 
@@ -235,11 +242,13 @@ def extract_cases(pages: int) -> pd.DataFrame:
         return df
 
     logging.info("No new cases found.")
-    return None
+    return pd.DataFrame()
 
 
 if __name__ == "__main__":
 
-    df = extract_cases(1)
+    df = extract_cases(30, 15)
     if not df.empty:
-        print(df[["title", "case_no", "date"]])
+        print(df[["judge_name", "title", "case_no", "date"]])
+    else:
+        print("empty")

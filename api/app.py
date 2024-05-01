@@ -77,7 +77,10 @@ def get_all_judges():
     filters = request.args.to_dict()
 
     if filters:
-        judge = filter_judges(conn, filters)
+        try:
+            judge = filter_judges(conn, filters)
+        except Exception as e:
+            return jsonify({'error': f'{e}'}), 404
 
     else:
         judge = get_table(conn, 'judge')
@@ -97,9 +100,9 @@ def get_all_judges_by_id(judge_id):
 
     try:
         judge = get_judge_by_id(conn, judge_id)
-
-    except TypeError:
-        return jsonify({'error': 'Judge ID must be an integer value'}), 404
+        
+    except TypeError as e:
+        return jsonify({'error': f'{e}'}), 404
 
     conn.close()
     if judge:

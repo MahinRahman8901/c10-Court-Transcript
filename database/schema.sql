@@ -27,7 +27,7 @@ CREATE TABLE transcript(
     "judge_id" INT NOT NULL,
     "verdict" TEXT NOT NULL,
     "summary" TEXT NOT NULL,
-    "title" VARCHAR(100) NOT NULL,
+    "title" TEXT NOT NULL,
     "transcript_date" DATE NOT NULL,
     FOREIGN KEY ("judge_id") REFERENCES judge("judge_id")
 );
