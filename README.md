@@ -239,6 +239,9 @@ This will include all the env files and both AWS Access and Security Keys
 
 ![ERD Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/MAIN%20ERD.png?raw=true)
 
+## Dashboard Wireframe
+
+![Dashboard Wireframe](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/dashboard_wireframe.jpg?raw=true)
 
 ## Setup
 
