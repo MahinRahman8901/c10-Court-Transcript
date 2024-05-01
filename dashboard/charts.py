@@ -63,10 +63,11 @@ def get_gender_donut_chart(data: pd.DataFrame):
 
     genders = data.value_counts("gender").reset_index()
 
-    chart = alt.Chart(genders).mark_arc(innerRadius=50).encode(
+    chart = alt.Chart(genders, title='Genders').mark_arc(innerRadius=50).encode(
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
-    )
+    ).properties(
+        title='Judge gender split')
 
     return chart
 
@@ -87,7 +88,7 @@ def get_waffle_chart(data: pd.DataFrame):
     fig = plt.figure(
         FigureClass=Waffle,
         rows=waffle_rows,
-        figsize=(20, 3),
+        figsize=(20, 2),
         values={'Claimant': len(claimants), 'Defendant': len(defendants)},
         colors=['#5e67c7', '#e26571'],
         facecolor='#0F1117',
