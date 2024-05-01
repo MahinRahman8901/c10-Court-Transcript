@@ -1,10 +1,11 @@
-import streamlit as st
 from os import environ as ENV
 import re
 from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
+import streamlit as st
 import pandas as pd
 import altair as alt
 from pywaffle import Waffle
@@ -14,6 +15,7 @@ from layout import set_page_config, get_sidebar
 from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart
 
 
+# ========== FUNCTIONS: JUDGE PROFILE ==========
 def extract_id_from_string(string: str) -> int:
     """Returns id in a bracket before string info."""
     return int(re.match(r"\((\d+)\)", string).group(1))
@@ -82,15 +84,16 @@ appointed: {judge["appointed"]}
 """
 
 
+# ========== FUNCTIONS: VISUALISATION CONTROLS ==========
 def get_data_from_db(conn: connect) -> pd.DataFrame:
     """Returns all data from the database as a pd.DF."""
 
     with conn.cursor() as cur:
         query = """
                 SELECT t.transcript_id, t.case_no, t.transcript_date, t.title, t.summary, t.verdict,
-                    j.judge_id, j.name AS judge, j.appointed, j.gender,
-                    jt.judge_type_id AS type_id, jt.type_name,
-                    c.circuit_id, c.name AS circuit_name
+                    FORMAT('(%s) %s', j.judge_id, j.name) judge, j.appointed, j.gender,
+                    jt.type_name AS type,
+                    c.name AS circuit
                 FROM transcript AS t
                 JOIN judge AS j
                     ON t.judge_id = j.judge_id
@@ -138,9 +141,9 @@ if __name__ == "__main__":
         pass
 
     with visualizations:
-        # controls/filters (may need columns to organise the controls)
+        # controls/filters (may need columns to organize the controls)
         data = get_data_from_db(conn)
-        st.dataframe(data)
+        st.write(data)
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
