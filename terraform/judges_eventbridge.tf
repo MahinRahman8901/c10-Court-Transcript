@@ -17,5 +17,5 @@ resource "aws_cloudwatch_event_rule" "judges-pipeline-terraform" {
 resource "aws_cloudwatch_event_target" "judges_lambda_target" {
   rule      = aws_cloudwatch_event_rule.judges-pipeline-terraform.name
   target_id = "MyLambdaFunctionTarget"
-  arn       = aws_lambda_function.court-pipeline-terraform.arn
+  arn       = aws_lambda_function.judges-pipeline-terraform.arn
 }
