@@ -171,7 +171,7 @@ This repository contains Terraform scripts to provision Lambda functions on AWS 
 ### Dependencies
 
 There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work.
-This will include all the `.env` files and both AWS Access and Security Keys
+This will include all the `.env` files and both AWS Access and Security Keys.
 
 | ENV Variable Name           | Description               |
 |-------------------------|-------------------------------|
