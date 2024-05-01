@@ -19,7 +19,6 @@ from case_profiles import (get_case_query,
                            find_case_query_type)
 
 
-
 def extract_id_from_string(string: str) -> int:
     """Returns id in a bracket before string info."""
 
@@ -274,15 +273,10 @@ if __name__ == "__main__":
     get_sidebar()
 
     data = get_data_from_db(CONN)
-    filtered_data = get_filtered_data(data, {})
-
-    st.altair_chart(get_gender_donut_chart(filtered_data))
-    st.pyplot(get_waffle_chart(filtered_data))
-
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
-        # judge profile
+        st.subheader(body="Judge Search", divider="grey")
         judge_profile_selection = get_judge_selection(
             CONN, "judge_profile_selection")
         if judge_profile_selection:
@@ -345,6 +339,7 @@ if __name__ == "__main__":
                 CONN, "viz_judge_selectbox")
         inputs = compile_inputs_as_dict(CONN, viz_type_selection, viz_circuit_selection,
                                         viz_gender_selection, viz_date_selection, viz_judge_selection)
+        filtered_data = get_filtered_data(data, inputs)
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
@@ -353,7 +348,7 @@ if __name__ == "__main__":
 
         with judge_cols[1]:
             # judge gender donut chart
-            pass
+            st.altair_chart(get_gender_donut_chart(filtered_data))
 
         case_cols = st. columns([.6, .4])
         with case_cols[0]:
@@ -378,10 +373,11 @@ if __name__ == "__main__":
                 else:
                     st.warning(
                         "No summary text found in the database for the entered case number.")
+
         verdict_cols = st.columns([.6, .4])
         with verdict_cols[0]:
             # verdict waffle chart
-            pass
+            st.pyplot(get_waffle_chart(filtered_data))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart
