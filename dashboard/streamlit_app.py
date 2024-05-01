@@ -123,7 +123,8 @@ if __name__ == "__main__":
         case_name = get_case_query()
         st.write(case_name)
 
-        st.write(get_case_information_by_name(conn, case_name))
+        if case_name:
+            st.write(get_case_information_by_name(conn, case_name))
     with visualizations:
         # controls/filters (may need columns to organise the controls)
         pass
