@@ -25,42 +25,13 @@ def get_case_query() -> st.text_input:
 
     return st.text_input(label="Enter a case name/no.")
 
-# TODO: if statements for if a number or name is passed
-# TODO: ILIKE query for matching name but = for case number
-
-
-def get_case_information_by_name(conn: connect, case_name) -> st.selectbox:
-    """Returns a Streamlit selectbox for individual cases."""
-
-    with conn.cursor() as cur:
-        query = """
-                SELECT t.title, t.transcript_date, j.judge_name
-                FROM transcript AS t
-                LEFT JOIN judge AS j
-                ON t.judge_id = j.judge_id
-                WHERE t.title ILIKE %s
-                """,
-        (case_name)
-        cur.execute(query)
-        rows = cur.fetchall()
-
-    rows = [item["judge"] for item in rows]
-
-    judge_selection = st.selectbox(placeholder="select a judge",
-                                   options=rows,
-                                   index=None,
-                                   label="judge selection",
-                                   label_visibility="hidden")
-
-    return judge_selection
-
 
 def get_case_information_by_name(conn, case_name):
-    """Returns a Streamlit selectbox for individual cases."""
+    """Returns a dictionary of case details found by case name."""
 
     with conn.cursor() as cur:
         query = """
-                SELECT t.title, t.transcript_date, j.name
+                SELECT t.title, t.transcript_date, t.verdict, t.summary, j.name
                 FROM transcript AS t
                 LEFT JOIN judge AS j
                 ON t.judge_id = j.judge_id
@@ -70,6 +41,29 @@ def get_case_information_by_name(conn, case_name):
         rows = cur.fetchone()
 
     return rows
+
+
+def get_case_information_by_case_number(conn, case_number):
+    """Returns a dictionary of case details found by case number."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT t.title, t.transcript_date, t.summary, t.verdict, j.name
+                FROM transcript AS t
+                LEFT JOIN judge AS j
+                ON t.judge_id = j.judge_id
+                WHERE t.case_no = %s
+                """
+        cur.execute(query, (case_number,))
+        rows = cur.fetchone()
+
+    return rows
+
+
+def find_case_query_type(case_query):
+    """Returns a bool if the case query is name (true) or number (false)"""
+
+    return all(str.isalpha(split) for split in case_query.split())
 
 
 if __name__ == "__main__":

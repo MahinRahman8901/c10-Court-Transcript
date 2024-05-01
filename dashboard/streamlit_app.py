@@ -12,7 +12,10 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from case_profiles import get_case_query, get_case_information_by_name
+from case_profiles import (get_case_query,
+                           get_case_information_by_name,
+                           get_case_information_by_case_number,
+                           find_case_query_type)
 
 
 def get_db_connection(config) -> connect:
@@ -117,14 +120,33 @@ if __name__ == "__main__":
         else:
             st.write("*(no judge selected)*")
 
-        # TODO: court case profile
-        pass
+        st.subheader(body="Case Search", divider="grey")
+        case_search = get_case_query()
 
-        case_name = get_case_query()
-        st.write(case_name)
+        if case_search:
+            if find_case_query_type(case_search):
+                case_info = get_case_information_by_name(
+                    conn, case_search)
+            else:
+                case_info = get_case_information_by_case_number(
+                    conn, case_search)
+        else:
+            case_info = False
 
-        if case_name:
-            st.write(get_case_information_by_name(conn, case_name))
+        if case_info:
+            title = case_info.get("title")
+            date = case_info.get("transcript_date")
+            judge_name = case_info.get("name")
+            summary = case_info.get("summary")
+            verdict = case_info.get("verdict")
+            st.write(f"Title: {title}")
+            st.write(f"DOC: {date}")
+            st.write(f"Judge Name: {judge_name}")
+            st.write(f"Summary: {summary}")
+            st.write(f"Verdict: {verdict}")
+        else:
+            st.write("Case not found.")
+
     with visualizations:
         # controls/filters (may need columns to organise the controls)
         pass
