@@ -3,10 +3,8 @@
 from os import environ as ENV
 
 import streamlit as st
-from dotenv import load_dotenv
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
-import pandas as pd
 
 
 def get_db_connection(config) -> connect:
@@ -29,35 +27,41 @@ def get_case_query() -> st.text_input:
 def get_case_information_by_name(conn, case_name):
     """Returns a dictionary of case details found by case name."""
 
-    with conn.cursor() as cur:
-        query = """
-                SELECT t.title, t.transcript_date, t.verdict, t.summary, j.name
-                FROM transcript AS t
-                LEFT JOIN judge AS j
-                ON t.judge_id = j.judge_id
-                WHERE t.title ILIKE %s
-                """
-        cur.execute(query, ('%' + case_name + '%',))
-        rows = cur.fetchone()
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT t.title, t.transcript_date, t.verdict, t.summary, j.name
+                    FROM transcript AS t
+                    LEFT JOIN judge AS j
+                    ON t.judge_id = j.judge_id
+                    WHERE t.title ILIKE %s
+                    """
+            cur.execute(query, ('%' + case_name + '%',))
+            rows = cur.fetchone()
 
-    return rows
+        return rows
+    except Exception as e:
+        st.error(f"Error fetching case information from database: {e}")
 
 
 def get_case_information_by_case_number(conn, case_number):
     """Returns a dictionary of case details found by case number."""
 
-    with conn.cursor() as cur:
-        query = """
-                SELECT t.title, t.transcript_date, t.summary, t.verdict, j.name
-                FROM transcript AS t
-                LEFT JOIN judge AS j
-                ON t.judge_id = j.judge_id
-                WHERE t.case_no = %s
-                """
-        cur.execute(query, (case_number,))
-        rows = cur.fetchone()
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT t.title, t.transcript_date, t.summary, t.verdict, j.name
+                    FROM transcript AS t
+                    LEFT JOIN judge AS j
+                    ON t.judge_id = j.judge_id
+                    WHERE t.case_no = %s
+                    """
+            cur.execute(query, (case_number,))
+            rows = cur.fetchone()
 
-    return rows
+        return rows
+    except Exception as e:
+        st.error(f"Error fetching case information from database: {e}")
 
 
 def find_case_query_type(case_query):

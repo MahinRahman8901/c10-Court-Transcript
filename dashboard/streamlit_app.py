@@ -20,18 +20,6 @@ from case_profiles import (get_case_query,
 
 
 
-def get_db_connection(config) -> connect:
-    """Returns db connection."""
-
-    return connect(dbname=config["DB_NAME"],
-                   user=config["DB_USER"],
-                   password=config["DB_PASSWORD"],
-                   host=config["DB_HOST"],
-                   port=config["DB_PORT"],
-                   cursor_factory=RealDictCursor)
-
-
-
 def extract_id_from_string(string: str) -> int:
     """Returns id in a bracket before string info."""
     return int(re.match(r"\((\d+)\)", string).group(1))
@@ -270,10 +258,10 @@ if __name__ == "__main__":
         if case_search:
             if find_case_query_type(case_search):
                 case_info = get_case_information_by_name(
-                    conn, case_search)
+                    CONN, case_search)
             else:
                 case_info = get_case_information_by_case_number(
-                    conn, case_search)
+                    CONN, case_search)
         else:
             case_info = False
 
