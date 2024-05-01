@@ -88,9 +88,15 @@ def get_gender_selection(conn: connect, key: str) -> st.selectbox:
     return judge_selection
 
 
-def get_date_selection() -> st.date_input:
-    """"""
-    return st.date_input(label, value="default_value_today", min_value=None, max_value=None, key=None, help=None, on_change=None, args=None, kwargs=None, *, format="YYYY/MM/DD", disabled=False, label_visibility="visible")
+def get_date_selection(key: str) -> st.date_input:
+    """Returns a Streamlit date input for judge appointment."""
+
+    return st.date_input(key=key,
+                         value=None,
+                         min_value=None, max_value=None,
+                         format="YYYY/MM/DD",
+                         label="date selection",
+                         label_visibility="hidden")
 
 
 # ========== FUNCTIONS: DATABASE ===========
@@ -205,6 +211,9 @@ if __name__ == "__main__":
         with controls[2]:
             viz_gender_selection = get_gender_selection(
                 CONN, "viz_gender_selection")
+        with controls[3]:
+            viz_date_selection = get_date_selection(
+                CONN, "viz_date_selection")
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
