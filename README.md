@@ -83,6 +83,7 @@ We have also ensured to test each part of the pipeline to ensure that they work 
 In order to test the files, you firstly must make sure that you `pip install -r requirements.txt` in order to have access to `pytest`. Once this has been done you can run:
 - `pytest test_xxxx` -> This will run the pytest on the specific file itself.
 - `pytest` -> This will run pytest on every test file within the directory you are currently in.
+- `pytest --cov . --cov-report term-missing` -> This will show overall test coverage of the system, as well as whats missing and needs to be tested.
 
 ## Data Cleaning
 
