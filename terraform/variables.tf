@@ -57,3 +57,21 @@ variable "OPENAI_API_KEY" {
     type = string
     sensitive = true
 }
+
+variable "SUBNET_GROUP" {
+  type = string
+}
+
+variable "VPC_GROUP" {
+  type = string
+  sensitive = true
+}
+
+variable "ECS_CLUSTER" {
+  type = string
+  sensitive = true
+}
+
+variable "ECS_ROLE" {
+  type = string
+}
