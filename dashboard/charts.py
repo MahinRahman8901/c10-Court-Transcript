@@ -51,6 +51,18 @@ def get_judge_verdicts(conn: connect, judge_id: str, verdict: str) -> int:
     return len(rows)
 
 
+def get_judge_appointed(conn: connect):
+    query = """
+                SELECT appointed, count(judge_id) FROM judge
+                GROUP BY appointed;
+                """
+    with conn.cursor() as cur:
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return pd.DataFrame(rows)
+
+
 def get_gender_donut_chart(conn: connect):
 
     data = get_judge_genders(conn)
@@ -76,6 +88,9 @@ def get_waffle_chart(conn: connect, judge_id):
     )
 
     return fig
+
+
+def get_judge_count_line_chart(conn: connect, judge_id):
 
 
 if __name__ == "__main__":
