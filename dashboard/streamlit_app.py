@@ -12,11 +12,12 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
+from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart
 from case_profiles import (get_case_query,
                            get_case_information_by_name,
                            get_case_information_by_case_number,
                            find_case_query_type)
-from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart
+
 
 
 def get_db_connection(config) -> connect:
@@ -138,7 +139,6 @@ def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
 
     return judge_selection
 
-
 # ========== FUNCTIONS: DATABASE ===========
 def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
     """Returns a tuple of judge info and cases overseen."""
@@ -242,9 +242,12 @@ if __name__ == "__main__":
 
     get_sidebar()
 
-    st.altair_chart(get_gender_donut_chart(CONN))
+    data = get_data_from_db(CONN)
+    filtered_data = get_filtered_data(data, {})
 
-    st.pyplot(get_waffle_chart(CONN, '593'))
+    st.altair_chart(get_gender_donut_chart(filtered_data))
+    st.pyplot(get_waffle_chart(filtered_data))
+
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
