@@ -22,7 +22,11 @@ from case_profiles import (get_case_query,
 
 def extract_id_from_string(string: str) -> int:
     """Returns id in a bracket before string info."""
-    return int(re.match(r"\((\d+)\)", string).group(1))
+
+    if string:
+        return int(re.match(r"\((\d+)\)", string).group(1))
+
+    return None
 
 
 # ========== FUNCTIONS: SELECTIONS ==========
@@ -65,6 +69,7 @@ def get_circuit_selection(conn: connect, key: str) -> st.multiselect:
     judge_selection = st.multiselect(key=key,
                                      placeholder="select circuit(s)",
                                      options=rows,
+                                     default=None,
                                      label="judge selection",
                                      label_visibility="hidden",)
 
@@ -126,6 +131,44 @@ def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
                                    label_visibility="hidden")
 
     return judge_selection
+
+
+def compile_inputs_as_dict(conn: connect, judge_type: str = None, circuits: str = None,
+                           gender: str = None, date: tuple = None, judge: str = None) -> dict:
+    """Returns input widget returns as a single dictionary"""
+
+    with conn.cursor() as cur:
+        if judge_type:
+            query_type = """
+                            SELECT judge_type_id
+                            FROM judge_type
+                            WHERE type_name = %s
+                            """
+            cur.execute(query_type, [judge_type])
+            judge_type = cur.fetchone()["judge_type_id"]
+
+        if circuits:
+            placeholders = ', '.join([f"'{circuit}'" for circuit in circuits])
+            st.write(placeholders)
+            query_circuit = f"""
+                            SELECT circuit_id
+                            FROM circuit
+                            WHERE name IN ({placeholders})
+                            """
+            cur.execute(query_circuit)
+            circuits = cur.fetchall()
+            circuits = [circuit["circuit_id"] for circuit in circuits]
+
+    judge_id = extract_id_from_string(judge)
+
+    inputs = {"judge_id": judge_id,
+              "circuit_id": circuits,
+              "gender": gender,
+              "appointment_date": date,
+              "judge_type_id": judge_type}
+
+    return inputs
+
 
 # ========== FUNCTIONS: DATABASE ===========
 def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
@@ -281,8 +324,9 @@ if __name__ == "__main__":
 
     with visualizations:
         data = get_data_from_db(CONN)
+        st.dataframe(data)
 
-        # controls/filters (may need columns to organise the controls)
+        # controls/filters (may need columns to organize the controls)
         controls = st.columns(5)
         with controls[0]:
             viz_type_selection = get_judge_type_selection(
@@ -299,6 +343,8 @@ if __name__ == "__main__":
         with controls[4]:
             viz_judge_selection = get_judge_selection(
                 CONN, "viz_judge_selectbox")
+        inputs = compile_inputs_as_dict(CONN, viz_type_selection, viz_circuit_selection,
+                                        viz_gender_selection, viz_date_selection, viz_judge_selection)
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
