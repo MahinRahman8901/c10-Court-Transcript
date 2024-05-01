@@ -11,7 +11,7 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart
+from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart
 
 
 def extract_id_from_string(string: str) -> int:
@@ -88,7 +88,7 @@ def get_gender_selection(conn: connect, key: str) -> st.selectbox:
     return judge_selection
 
 
-def get_date_selection(key: str) -> st.date_input:
+def get_date_selection(conn: connect, key: str) -> st.date_input:
     """Returns a Streamlit date input for judge appointment."""
 
     return st.date_input(key=key,
@@ -141,31 +141,6 @@ appointed: {judge["appointed"]}
 """
 
 
-def get_data_from_db(conn: connect) -> pd.DataFrame:
-    """Returns all data from the database as a pd.DF."""
-
-    with conn.cursor() as cur:
-        query = """
-                SELECT t.transcript_id, t.case_no, t.transcript_date, t.title, t.summary, t.verdict,
-                    j.judge_id, j.name AS judge, j.appointed, j.gender,
-                    jt.judge_type_id AS type_id, jt.type_name,
-                    c.circuit_id, c.name AS circuit_name
-                FROM transcript AS t
-                JOIN judge AS j
-                    ON t.judge_id = j.judge_id
-                JOIN judge_type AS jt
-                    ON j.judge_type_id = jt.judge_type_id
-                JOIN circuit AS c
-                    ON j.circuit_id = c.circuit_id
-                """
-        cur.execute(query)
-        rows = cur.fetchall()
-
-    df = pd.DataFrame(rows)
-
-    return df
-
-
 if __name__ == "__main__":
 
     load_dotenv()
@@ -175,9 +150,11 @@ if __name__ == "__main__":
 
     get_sidebar()
 
-    st.altair_chart(get_gender_donut_chart(CONN))
+    data = get_data_from_db(CONN)
+    filtered_data = get_filtered_data(data, {})
 
-    st.pyplot(get_waffle_chart(CONN, '593'))
+    st.altair_chart(get_gender_donut_chart(filtered_data))
+    st.pyplot(get_waffle_chart(filtered_data))
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
