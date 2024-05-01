@@ -217,7 +217,7 @@ This will include all the env files and both AWS Access and Security Keys
 #### Above and Beyond
 ![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
 
-## Entity Relation Diagram
+## ERD
 
 ![ERD Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/MAIN%20ERD.png?raw=true)
 
