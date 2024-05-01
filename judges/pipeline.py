@@ -188,7 +188,8 @@ def fuzzy_match_circuit(circuit: str, circuit_df: pd.DataFrame) -> int:
 
 def fill_ids(judges: pd.DataFrame,
              types: pd.DataFrame,
-             circuits: pd.DataFrame) -> list[dict]:
+             circuits: pd.DataFrame,
+             stored_judges: pd.DataFrame) -> list[dict]:
     """Converts judge type and circuit strings to corresponding ids in db.
     Returns transformed judge data as pd.DF."""
 
@@ -203,6 +204,13 @@ def fill_ids(judges: pd.DataFrame,
     columns = list(zip(judges['name'], judges['gender'], judges['appointment'],
                        judges['judge_type_id'], judges['circuit_id']))
 
+    print(len(columns))
+    for item in columns:
+        if (item[0] in stored_judges["name"].values) and (item[2] in [str(date) for date in stored_judges["appointed"].values]):
+            columns.remove(item)
+        else:
+            print("Not found")
+            print(item[0], item[2])
     return columns
 
 
@@ -256,10 +264,16 @@ def main():
     logger.info("=========== LOADING ==========")
     judge_types = get_db_table(conn, "judge_type")
     circuits = get_db_table(conn, "circuit")
-    judges = fill_ids(judges, judge_types, circuits)
+    stored_judges = get_db_table(conn, "judge")
+    judges = fill_ids(judges, judge_types, circuits, stored_judges)
 
-    logger.info("===== uploading to database... =====")
-    upload_data(conn, judges)
+    if judges:
+        # print(judges[:10])
+        print(len(judges))
+
+    # logger.info("===== uploading to database... =====")
+    # if judges:
+    #     upload_data(conn, judges)
 
 
 def handler(event, context):
