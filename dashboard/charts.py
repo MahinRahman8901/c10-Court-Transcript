@@ -63,17 +63,35 @@ def get_gender_donut_chart(conn: connect):
     return chart
 
 
-def get_waffle_chart(conn: connect, judge_id):
+def get_waffle_chart(data: pd.DataFrame, judge_id=None, circuit_id=None, gender=None):
 
-    claimants = get_judge_verdicts(conn, judge_id, 'claimant')
-    defendants = get_judge_verdicts(conn, judge_id, 'defendant')
+    if judge_id:
+        data = data[data['judge_id'] == judge_id]
 
-    fig = plt.figure(
-        FigureClass=Waffle,
-        rows=5,
-        figsize=(20, 5),
-        values={'Claimants': claimants, 'Defendants': defendants}
-    )
+    if circuit_id:
+        data = data[data['circuit_id'] == circuit_id]
+
+    if gender:
+        data = data[data['gender'] == gender]
+
+    print(data)
+
+    # fig = plt.figure(
+    #     FigureClass=Waffle,
+    #     rows=5,
+    #     figsize=(20, 3),
+    #     values={'Claimant': claimants, 'Defendant': defendants},
+    #     colors=['#5e67c7', '#e26571'],
+    #     facecolor='#0F1117',
+    #     title={
+    #         'label': f'Verdicts from {judge_id}',
+    #         'loc': 'left',
+    #         'fontdict': {
+    #             'fontsize': 15,
+    #             'color': '#FFFFFF'
+    #         }
+    #     }
+    # )
 
     return fig
 
@@ -84,6 +102,6 @@ if __name__ == "__main__":
 
     CONN = get_db_connection(ENV)
 
-    result = get_judge_verdicts(CONN, '3', 'defendant')
+    result = get_waffle_chart()
 
     print(result)
