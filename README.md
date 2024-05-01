@@ -32,11 +32,11 @@ Our automated data pipeline will:
 
 - Extract both judge data and case data from the given data sources.
 - Transform the data by cleaning and standardising it.
-- Summarise using GPT-4 API and give a verdict on each case
-- Deploy onto a dashboard to view all metrics
-- Create an API that allows for anyone to view court cases and judge information
+- Summarise using GPT-4 API and give a verdict on each case.
+- Deploy onto a dashboard to view all metrics.
+- Create an API that allows for anyone to view court cases and judge information.
 
-### Visualization
+### Visualization (Dashboard)
 
 - XXXXXX.
 - XXXXXX.
@@ -44,30 +44,50 @@ Our automated data pipeline will:
 
 ### API
 
-- XXXXXX.
-- XXXXXX.
+- View multiple end points, that allow for the general public to view the case information and judge information
+- Users are able to query the API, and take data and query it with however they want.
 
 ## Overview
 
 The pipeline script consists of several steps:
 
-1. **Extract**: Connects to DB and scrapes the websites to access the URLs of each case, then return the pdf of the given case. We then extract the key information from the PDF and parse it using multiple regex statements and create a dataframe.
+1. **Extract**: Connects to DB and scrapes the websites to access the URLs of each case, then return the PDF of the given case. We then extract the key information from the PDF and parse it using multiple regex statements and create a dataframe.
 
 2. **Transform**: Applying GPT queries to all the cases conclusions and introductions to gain both a summary and a verdict. Cleans the retrieved data, standardising all the dates and the names of both the judges and court cases.
 
-3. **Load**: Inserts the cleaned data into a Relational Database in this case we used PSQL. All data is inserted into the correct tables that can be viewed by running the bash scripts (See Bash Database Scripts Below)
+3. **Load**: Inserts the cleaned data into a Relational Database in this case we used PSQL. All data is inserted into the correct tables that can be viewed by running the bash scripts (See Bash Database Scripts Below):
+
+## ENV Variables
+
+| ENV Variable Name           | Description               |
+|-------------------------|-------------------------------|
+| DB_USER                 | Database User                 |
+| DB_PASSWORD             | Database Password             |
+| DB_HOST                 | Database Host                 |
+| DB_PORT                 | Database Port                 |
+| DB_NAME                 | Database Name                 |
+| BASE_URL                | Website URL                   |
+| COMM_QUERY_EXTENSION    | Commercial Court Query        |
+| STORAGE_FOLDER          | Storage Folder Name           |
+| OPENAI_API_KEY          | GPT API Key                   |
 
 ## Pipeline Testing
 
-We have also ensured to test each part of the pipeline to ensure that they work and these can be viewed below
+We have also ensured to test each part of the pipeline to ensure that they work and these can be viewed below:
 
 - `test_extract.py` -> | Tests dataframe creation | Tests the URL with the cases | Tests the index to infinity function |
 - `test_transform.py` -> | Tests date returns correct bool | Tests date formats correctly w/ Parametrisation | Tests if judge titles are stripped | Tests if case numbers have been standardised w/ Parametrisation
 - `test_load.py` -> xxxxxx
 
+### How to Test
+In order to test the files, you firstly must make sure that you `pip install -r requirements.txt` in order to have access to `pytest`. Once this has been done you can run:
+- `pytest test_xxxx` -> This will run the pytest on the specific file itself.
+- `pytest` -> This will run pytest on every test file within the directory you are currently in.
+- `pytest --cov . --cov-report term-missing` -> This will show overall test coverage of the system, as well as whats missing and needs to be tested.
+
 ## Data Cleaning
 
-After fetching the data, the script performs cleaning operations to ensure consistency and data integrity. It standardises judges names and fixes the multiple different date\time formats when extracted from the pdfs to keep consistency within our database.
+After fetching the data, the script performs cleaning operations to ensure consistency and data integrity. It standardises judges names and fixes the multiple different date\time formats when extracted from the PDFs to keep consistency within our database.
 
 ## Database Interaction
 
@@ -95,7 +115,7 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ## Deployment
 
-Access to Dashboard via ECS: xxxxxx
+## Dashboard
 
 ### Features
 - **XXXXXX:**
@@ -110,6 +130,23 @@ Access to Dashboard via ECS: xxxxxx
 ### Data Sources
 - **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
 
+## API
+
+Access to API via ECS: http://3.8.5.146:5000
+
+### Features
+- **View Endpoints:** On the route page you are able to view all the endpoints and filters, as well as what each one does.
+- **Querying:** Users are able to access our api and query it with howver they see fit.
+- **API Intergration:** Users are able to integrate the api within their own code and have access to the entire database.
+
+### Usage
+- Accessing the database via querying API.
+- Filtering through cases and judges.
+
+
+### Data Sources
+- **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
+
 ## Terraform
 
 This repository contains Terraform scripts to provision Lambda functions on AWS for various purposes related to managing plant data.
@@ -118,13 +155,23 @@ This repository contains Terraform scripts to provision Lambda functions on AWS 
   - This file will spin up the AWS services using the access and secret key.
 - Lambda Functions for running the pipeline `pipeline.tf`
   - This file will create a lambda function which will run the whole pipeline file itself.
-- Lambda Functions for RDS Insertion `eventbridge.tf`
+- Lambda Functions for RDS Insertion `pipeline_eventbridge.tf`
   - This file will create a lambda function that spins up the event bridges that connect itself to the lambda function.
- 
+- Lambda Functions for RDS Insertion `api.tf`
+  - This file will create a ECS service that will run the api python task as a constant service, that can be accessed anywhere.
+- Lambda Functions for RDS Insertion `dashboard.tf`
+  - This file will create a ECS service that will run the dashboard python task as a constant service, that can be accessed anywhere.
+- Lambda Functions for RDS Insertion `judges.tf`
+  - This file will create a lambda function for the judges.
+- Lambda Functions for RDS Insertion `judges_eventbridge.tf`
+  - This file will create a lambda function that spins up the event bridges that connect itself to the lambda function.
+- Lambda Functions for RDS Insertion `variables.tf`
+  - This file will contain all the important variables that are needed, in order for the program to run and these can be found in the dependencies below. 
+  
 ### Dependencies
 
-There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work
-This will include all the env files and both AWS Access and Security Keys
+There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work.
+This will include all the `.env` files and both AWS Access and Security Keys.
 
 | ENV Variable Name           | Description               |
 |-------------------------|-------------------------------|
@@ -177,7 +224,7 @@ This will include all the env files and both AWS Access and Security Keys
 
 ## Diagrams
 
-### Architecture Diagram 
+## Architecture Diagram 
 
 #### Minimum Viable Product
 ![Architecture MVP](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_MVP.png?raw=true)
@@ -188,6 +235,13 @@ This will include all the env files and both AWS Access and Security Keys
 #### Above and Beyond
 ![Architecture AnB](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Architecture_AnB.png?raw=true)
 
+## ERD
+
+![ERD Diagram](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/MAIN%20ERD.png?raw=true)
+
+## Dashboard Wireframe
+
+![Dashboard Wireframe](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/dashboard_wireframe.jpg?raw=true)
 
 ## Setup
 
