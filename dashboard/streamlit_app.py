@@ -92,11 +92,34 @@ def get_date_selection(key: str) -> st.date_input:
     """Returns a Streamlit date input for judge appointment."""
 
     return st.date_input(key=key,
-                         value=None,
+                         value=(),
                          min_value=None, max_value=None,
                          format="YYYY/MM/DD",
                          label="date selection",
                          label_visibility="hidden")
+
+
+def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
+    """Returns a Streamlit selectbox for judge types."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT type_name
+                FROM judge_type
+                """
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    rows = [item["type_name"] for item in rows]
+
+    judge_selection = st.selectbox(key=key,
+                                   placeholder="Select a judge type",
+                                   options=rows,
+                                   index=None,
+                                   label="judge type selection",
+                                   label_visibility="hidden")
+
+    return judge_selection
 
 
 # ========== FUNCTIONS: DATABASE ===========
@@ -203,8 +226,8 @@ if __name__ == "__main__":
         # controls/filters (may need columns to organise the controls)
         controls = st.columns(5)
         with controls[0]:
-            viz_judge_selection = get_judge_selection(
-                CONN, "viz_judge_selectbox")
+            viz_type_selection = get_judge_type_selection(
+                CONN, "viz_type_selection")
         with controls[1]:
             viz_circuit_selection = get_circuit_selection(
                 CONN, "viz_circuit_selection")
@@ -213,7 +236,10 @@ if __name__ == "__main__":
                 CONN, "viz_gender_selection")
         with controls[3]:
             viz_date_selection = get_date_selection(
-                CONN, "viz_date_selection")
+                "viz_date_selection")
+        with controls[4]:
+            viz_judge_selection = get_judge_selection(
+                CONN, "viz_judge_selectbox")
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
