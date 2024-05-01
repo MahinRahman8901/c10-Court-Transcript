@@ -95,7 +95,25 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ## Deployment
 
-Access to Dashboard via ECS: xxxxxx
+## Dashboard
+Access to Dashboard via ECS: 35.177.93.210:8200
+
+### Features
+- **XXXXXX:**
+- **XXXXXX:**
+- **XXXXXX:** 
+
+### Usage
+- XXXXXXXXX
+- XXXXXXXXX
+- XXXXXXXXX
+
+### Data Sources
+- **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
+
+## API
+
+Access to API via ECS: http://3.8.5.146:5000/
 
 ### Features
 - **XXXXXX:**
