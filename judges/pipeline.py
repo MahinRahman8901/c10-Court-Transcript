@@ -211,8 +211,6 @@ def fill_ids(judges: pd.DataFrame,
         if (columns[i][0] in stored_judges["name"].values) and (columns[i][2] in [str(date) for date in stored_judges["appointed"].values]):
             already_stored.append(columns[i])
         else:
-            print("Not found")
-            print(columns[i][0], columns[i][2])
             i += 1
     return [new_judge for new_judge in columns if new_judge not in already_stored]
 
