@@ -92,9 +92,8 @@ def get_date_selection() -> st.date_input:
     """"""
     return st.date_input(label, value="default_value_today", min_value=None, max_value=None, key=None, help=None, on_change=None, args=None, kwargs=None, *, format="YYYY/MM/DD", disabled=False, label_visibility="visible")
 
+
 # ========== FUNCTIONS: DATABASE ===========
-
-
 def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
     """Returns a tuple of judge info and cases overseen."""
 
@@ -136,6 +135,31 @@ appointed: {judge["appointed"]}
 """
 
 
+def get_data_from_db(conn: connect) -> pd.DataFrame:
+    """Returns all data from the database as a pd.DF."""
+
+    with conn.cursor() as cur:
+        query = """
+                SELECT t.transcript_id, t.case_no, t.transcript_date, t.title, t.summary, t.verdict,
+                    j.judge_id, j.name AS judge, j.appointed, j.gender,
+                    jt.judge_type_id AS type_id, jt.type_name,
+                    c.circuit_id, c.name AS circuit_name
+                FROM transcript AS t
+                JOIN judge AS j
+                    ON t.judge_id = j.judge_id
+                JOIN judge_type AS jt
+                    ON j.judge_type_id = jt.judge_type_id
+                JOIN circuit AS c
+                    ON j.circuit_id = c.circuit_id
+                """
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    df = pd.DataFrame(rows)
+
+    return df
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -168,6 +192,8 @@ if __name__ == "__main__":
         pass
 
     with visualizations:
+        data = get_data_from_db(CONN)
+
         # controls/filters (may need columns to organise the controls)
         controls = st.columns(5)
         with controls[0]:
