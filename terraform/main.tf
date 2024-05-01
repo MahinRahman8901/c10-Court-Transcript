@@ -7,19 +7,19 @@ provider "aws" {
 }
 
 data "aws_db_subnet_group" "public_subnet_group" {
-    name = "public_subnet_group"
+    name = var.SUBNET_GROUP
 }
 
 data "aws_vpc" "cohort_10_vpc" {
-    id = "vpc-0c4f01396d92e1cc7"
+    id = var.VPC_GROUP
 }
 
 data "aws_ecs_cluster" "c10-ecs-cluster" {
-    cluster_name = "c10-ecs-cluster"
+    cluster_name = var.VPC_GROUP
 }
 
 data "aws_iam_role" "execution-role" {
-    name = "ecsTaskExecutionRole"
+    name = var.ECS_ROLE
 }
 
 resource "aws_security_group" "rds_security_group" {
