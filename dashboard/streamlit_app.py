@@ -12,6 +12,7 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
+from case_profiles import get_case_query, get_case_information_by_name
 
 
 def get_db_connection(config) -> connect:
@@ -116,9 +117,13 @@ if __name__ == "__main__":
         else:
             st.write("*(no judge selected)*")
 
-        # court case profile
+        # TODO: court case profile
         pass
 
+        case_name = get_case_query()
+        st.write(case_name)
+
+        st.write(get_case_information_by_name(conn, case_name))
     with visualizations:
         # controls/filters (may need columns to organise the controls)
         pass
