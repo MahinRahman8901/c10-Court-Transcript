@@ -97,8 +97,6 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ## Dashboard
 
-Access to Dashboard via ECS: xxxxxx
-
 ### Features
 - **XXXXXX:**
 - **XXXXXX:**
