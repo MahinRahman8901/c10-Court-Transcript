@@ -32,9 +32,9 @@ Our automated data pipeline will:
 
 - Extract both judge data and case data from the given data sources.
 - Transform the data by cleaning and standardising it.
-- Summarise using GPT-4 API and give a verdict on each case
-- Deploy onto a dashboard to view all metrics
-- Create an API that allows for anyone to view court cases and judge information
+- Summarise using GPT-4 API and give a verdict on each case.
+- Deploy onto a dashboard to view all metrics.
+- Create an API that allows for anyone to view court cases and judge information.
 
 ### Visualization (Dashboard)
 
@@ -55,7 +55,7 @@ The pipeline script consists of several steps:
 
 2. **Transform**: Applying GPT queries to all the cases conclusions and introductions to gain both a summary and a verdict. Cleans the retrieved data, standardising all the dates and the names of both the judges and court cases.
 
-3. **Load**: Inserts the cleaned data into a Relational Database in this case we used PSQL. All data is inserted into the correct tables that can be viewed by running the bash scripts (See Bash Database Scripts Below)
+3. **Load**: Inserts the cleaned data into a Relational Database in this case we used PSQL. All data is inserted into the correct tables that can be viewed by running the bash scripts (See Bash Database Scripts Below):
 
 ## ENV Variables
 
@@ -73,7 +73,7 @@ The pipeline script consists of several steps:
 
 ## Pipeline Testing
 
-We have also ensured to test each part of the pipeline to ensure that they work and these can be viewed below
+We have also ensured to test each part of the pipeline to ensure that they work and these can be viewed below:
 
 - `test_extract.py` -> | Tests dataframe creation | Tests the URL with the cases | Tests the index to infinity function |
 - `test_transform.py` -> | Tests date returns correct bool | Tests date formats correctly w/ Parametrisation | Tests if judge titles are stripped | Tests if case numbers have been standardised w/ Parametrisation
@@ -170,8 +170,8 @@ This repository contains Terraform scripts to provision Lambda functions on AWS 
   
 ### Dependencies
 
-There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work
-This will include all the env files and both AWS Access and Security Keys
+There is also a file called `variables.tf`. In order to create the terraformed functions you must make sure you have a `terraform.tfvars` that contains the values associated with the variables in order for the commands to run the terraform to work.
+This will include all the `.env` files and both AWS Access and Security Keys
 
 | ENV Variable Name           | Description               |
 |-------------------------|-------------------------------|
