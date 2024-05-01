@@ -1,4 +1,5 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 from os import environ as ENV
 import re
 from datetime import datetime, timezone, timedelta
@@ -205,6 +206,33 @@ def get_data_from_db(conn: connect) -> pd.DataFrame:
     return df
 
 
+def generate_word_cloud(summary_texts):
+    combined_text = ' '.join(summary_texts)
+    word_cloud = WordCloud(width=800, height=400, background_color='white',
+                           stopwords=STOPWORDS).generate(combined_text)
+    return word_cloud
+
+
+def get_summary_texts_from_db(conn, case_no):
+    summary_texts = []
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT summary FROM transcript WHERE case_no = %s
+                    """
+            cur.execute(query, (case_no,))
+            rows = cur.fetchall()
+            for row in rows:
+                summary_text = row.get('summary')
+                if summary_text:
+                    summary_texts.append(summary_text)
+            return summary_texts
+
+    except Exception as e:
+        st.error(f"Error fetching summary texts from database: {e}")
+        return summary_texts
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -296,9 +324,23 @@ if __name__ == "__main__":
             pass
 
         with case_cols[1]:
-            # summary word cloud
-            pass
+            st.title("Word Cloud Generator")
 
+            case_no = st.text_input("Enter Case Number:")
+            if case_no:
+                summary_texts = get_summary_texts_from_db(CONN, case_no)
+
+                if summary_texts:
+                    st.subheader("Word Cloud")
+                    word_cloud = generate_word_cloud(summary_texts)
+                    word_cloud = generate_word_cloud(summary_texts)
+                    plt.figure(figsize=(10, 5))
+                    plt.imshow(word_cloud, interpolation='bilinear')
+                    plt.axis('off')
+                    st.pyplot()
+                else:
+                    st.warning(
+                        "No summary text found in the database for the entered case number.")
         verdict_cols = st.columns([.6, .4])
         with verdict_cols[0]:
             # verdict waffle chart
