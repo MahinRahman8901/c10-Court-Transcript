@@ -205,13 +205,24 @@ def fill_ids(judges: pd.DataFrame,
                        judges['judge_type_id'], judges['circuit_id']))
 
     print(len(columns))
-    for item in columns:
-        if (item[0] in stored_judges["name"].values) and (item[2] in [str(date) for date in stored_judges["appointed"].values]):
-            columns.remove(item)
+
+    # for item in columns:
+    #     if (item[0] in stored_judges["name"].values) and (item[2] in [str(date) for date in stored_judges["appointed"].values]):
+    #         columns.remove(item)
+    #     else:
+    #         print("Not found")
+    #         print(item[0], item[2])
+
+    already_stored = []
+    i = 0
+    for i in range(0, len(columns)):
+        if (columns[i][0] in stored_judges["name"].values) and (columns[i][2] in [str(date) for date in stored_judges["appointed"].values]):
+            already_stored.append(columns[i])
         else:
             print("Not found")
-            print(item[0], item[2])
-    return columns
+            print(columns[i][0], columns[i][2])
+            i += 1
+    return [new_judge for new_judge in columns if new_judge not in already_stored]
 
 
 def upload_data(conn: connect, records: list[tuple]) -> None:
@@ -270,6 +281,8 @@ def main():
     if judges:
         # print(judges[:10])
         print(len(judges))
+    else:
+        print("No new judges!")
 
     # logger.info("===== uploading to database... =====")
     # if judges:
