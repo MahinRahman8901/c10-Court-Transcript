@@ -12,7 +12,12 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart
+from charts import (get_db_connection,
+                    get_data_from_db,
+                    get_filtered_data,
+                    get_gender_donut_chart,
+                    get_waffle_chart,
+                    get_verdicts_stacked_bar_chart)
 from case_profiles import (get_case_query,
                            get_case_information_by_name,
                            get_case_information_by_case_number,
@@ -273,6 +278,8 @@ if __name__ == "__main__":
     get_sidebar()
 
     data = get_data_from_db(CONN)
+
+    st.altair_chart(get_verdicts_stacked_bar_chart(data))
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
