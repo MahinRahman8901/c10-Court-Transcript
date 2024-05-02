@@ -82,6 +82,20 @@ def get_judges_appointed(conn: connect) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def get_cases(conn: connect) -> pd.DataFrame:
+    '''Returns the case number and date.'''
+
+    query = """
+                SELECT COUNT(case_no), transcript_date FROM transcript
+                GROUP BY transcript_date;
+                """
+    with conn.cursor() as cur:
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return pd.DataFrame(rows)
+
+
 def get_gender_donut_chart(data: pd.DataFrame):
     '''Returns a donut chart showing judge genders.'''
 
@@ -135,7 +149,25 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     judge_count = data.set_index("appointed")
 
     judge_count = judge_count.groupby(
-        ['gender', pd.Grouper(freq='Y')]).count().reset_index()
+        ['gender', pd.Grouper(freq='YE')]).count().reset_index()
+
+    # Adding counts for years that don't have values
+    for i in range(1999, 2025):
+
+        if not ((judge_count['gender'] == "M") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "M", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
+
+        if not ((judge_count['gender'] == "F") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "F", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
+
+        if not ((judge_count['gender'] == "X") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "X", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
 
     chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
@@ -146,6 +178,23 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     return chart
 
 
+def get_case_count_line_chart(conn: connect) -> alt.Chart:
+    '''Returns the line graph for case count over time.'''
+
+    data = get_cases(conn)
+
+    data["transcript_date"] = pd.to_datetime(data["transcript_date"])
+    case_count = data.set_index("transcript_date")
+
+    case_count = case_count.groupby(
+        [pd.Grouper(freq='YE')]).count().reset_index()
+
+    chart = alt.Chart(case_count, title="Case Count / Time").mark_line().encode(
+        x=alt.X("transcript_date", title="Month of Case"),
+        y=alt.Y("count", title="Number of Cases"),
+    )
+    
+    
 def generate_word_cloud(summary_texts):
     """Generates the word cloud itself with the 
     correct design."""

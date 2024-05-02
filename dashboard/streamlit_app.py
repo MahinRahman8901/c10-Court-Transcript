@@ -20,7 +20,8 @@ from charts import (get_db_connection,
                     generate_word_cloud,
                     get_judge_count_line_chart,
                     get_verdicts_stacked_bar_chart,
-                    get_judges_appointed)
+                    get_judges_appointed,
+                    get_case_count_line_chart)
 
 from case_profiles import (get_case_query,
                            get_case_information_by_name,
@@ -341,7 +342,7 @@ if __name__ == "__main__":
         case_cols = st. columns([.6, .4])
         with case_cols[0]:
             # case count over doc date line graph
-            pass
+            st.altair_chart(get_case_count_line_chart(CONN))
 
         with case_cols[1]:
             st.title("Word Cloud")
