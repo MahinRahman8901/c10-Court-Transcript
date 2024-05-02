@@ -54,12 +54,12 @@ def get_filtered_data(data: pd.DataFrame, filters: dict):
 
     for key in filters.keys():
         if filters[key]:
-            if key == "circuit_id":
+            if key == "circuit_id" and len(data) != 0:
                 data = data[data[key].isin(filters[key])]
-            elif key == "appointed":
+            elif key == "appointed" and len(data) != 0:
                 data = data[data[key].apply(
                     lambda x: x >= filters[key][0] and x <= filters[key][1])]
-            else:
+            elif len(data) != 0:
                 data = data[data[key] == filters[key]]
 
     if len(data) == 0:
