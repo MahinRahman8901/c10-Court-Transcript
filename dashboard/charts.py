@@ -193,8 +193,10 @@ def get_case_count_line_chart(conn: connect) -> alt.Chart:
         x=alt.X("transcript_date", title="Month of Case"),
         y=alt.Y("count", title="Number of Cases"),
     )
-    
-    
+
+    return chart
+
+
 def generate_word_cloud(summary_texts):
     """Generates the word cloud itself with the 
     correct design."""
