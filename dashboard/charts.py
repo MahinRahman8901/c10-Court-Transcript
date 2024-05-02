@@ -115,7 +115,7 @@ def get_waffle_chart(data: pd.DataFrame):
     claimants = data[data['verdict'].str.lower().str.contains('claimant')]
     defendants = data[data['verdict'].str.lower().str.contains('defendant')]
 
-    waffle_rows = (len(claimants) + len(defendants)) // 100
+    waffle_rows = (len(claimants) + len(defendants)) // 50
 
     if waffle_rows == 0:
         waffle_rows = 1
@@ -123,18 +123,10 @@ def get_waffle_chart(data: pd.DataFrame):
     fig = plt.figure(
         FigureClass=Waffle,
         rows=waffle_rows,
-        figsize=(20, 2),
+        figsize=(20, 10),
         values={'Claimant': len(claimants), 'Defendant': len(defendants)},
         colors=['#5e67c7', '#e26571'],
         facecolor='#0F1117',
-        title={
-            'label': 'Cases ruled in favour of the claimant vs the defendant',
-            'loc': 'left',
-            'fontdict': {
-                'fontsize': 20,
-                'color': '#FFFFFF'
-            }
-        }
     )
 
     return fig
