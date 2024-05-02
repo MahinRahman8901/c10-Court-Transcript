@@ -301,7 +301,6 @@ if __name__ == "__main__":
 
     with visualizations:
         data = get_data_from_db(CONN)
-        # st.dataframe(data)
 
         # controls/filters (may need columns to organize the controls)
         controls = st.columns(5)
@@ -324,21 +323,22 @@ if __name__ == "__main__":
                                         viz_gender_selection, viz_date_selection, viz_judge_selection)
         filtered_data = get_filtered_data(data, inputs)
 
-        judge_cols = st.columns([.4, .2])
+        judge_cols = st.columns(2)
         with judge_cols[0]:
             # judge count over appointment date line graph
-            st.subheader("Waffle Chart")
+            st.subheader(
+                "Verdict Proportions")
             if isinstance(filtered_data, str):
                 st.write(filtered_data)
             else:
                 st.pyplot(get_waffle_chart(filtered_data))
 
         with judge_cols[1]:
-            # judge gender donut chart
-            st.subheader("Verdicts Bar Chart")
+
+            st.subheader("Verdicts By Circuit")
             st.altair_chart(get_verdicts_stacked_bar_chart(data))
 
-        case_cols = st. columns([.4, .2])
+        case_cols = st. columns(2)
         with case_cols[1]:
             # case count over doc date line graph
             st.subheader("Word Cloud")
@@ -367,7 +367,7 @@ if __name__ == "__main__":
             else:
                 st.altair_chart(get_gender_donut_chart(filtered_data))
 
-        verdict_cols = st.columns([.4, .2])
+        verdict_cols = st.columns(2)
         with verdict_cols[0]:
             st.subheader("Case Count / Time")
             # verdict waffle chart
