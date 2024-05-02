@@ -53,8 +53,8 @@ def get_judge_verdicts(conn: connect, judge_id: str, verdict: str) -> int:
 
 def get_judge_appointed(conn: connect):
     query = """
-                SELECT appointed, count(judge_id) FROM judge
-                GROUP BY appointed;
+                SELECT appointed, gender, count(judge_id) FROM judge
+                GROUP BY appointed, gender;
                 """
     with conn.cursor() as cur:
         cur.execute(query)
@@ -90,7 +90,21 @@ def get_waffle_chart(conn: connect, judge_id):
     return fig
 
 
-def get_judge_count_line_chart(conn: connect, judge_id):
+def get_judge_count_line_chart(conn):
+    data = get_judge_appointed(conn)
+    data["appointed"] = pd.to_datetime(data["appointed"])
+    judge_count = data.set_index("appointed")
+
+    judge_count = judge_count.groupby(
+        ['gender', pd.Grouper(freq='Y')]).count().reset_index()
+
+    chart = alt.Chart(judge_count).mark_line().encode(
+        x=alt.X("appointed", title="Year of Appointment"),
+        y=alt.Y("count", title="Number of Judges"),
+        color=alt.Color('gender:N', title='Gender')
+    )
+
+    return chart
 
 
 if __name__ == "__main__":
