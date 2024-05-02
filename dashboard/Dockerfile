@@ -11,6 +11,6 @@ COPY streamlit_app.py .
 COPY charts.py .
 COPY case_profiles.py .
 COPY layout.py .
-COPY .streamlit /.streamlit
+COPY .streamlit/config.toml .streamlit/config.toml
 
 CMD streamlit run streamlit_app.py --server.port 8200
