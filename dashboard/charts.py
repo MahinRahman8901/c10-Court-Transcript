@@ -58,7 +58,7 @@ def get_filtered_data(data: pd.DataFrame, filters: dict):
     return data
 
 
-def get_judge_appointed(conn: connect):
+def get_judge_appointed(conn: connect) -> pd.DataFrame:
     '''Returns the judge counts grouped by gender and appointment.'''
 
     query = """
@@ -119,7 +119,7 @@ def get_waffle_chart(data: pd.DataFrame):
     return fig
 
 
-def get_judge_count_line_chart(conn):
+def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     '''Returns the line graph for judge appointment count over time.'''
 
     data = get_judge_appointed(conn)
