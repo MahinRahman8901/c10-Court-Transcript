@@ -139,21 +139,6 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     return chart
 
 
-if __name__ == "__main__":
-
-    load_dotenv()
-
-    CONN = get_db_connection(ENV)
-
-    DATA = get_data_from_db(CONN)
-
-    filtered = get_filtered_data(DATA, {'judge_id': None, 'circuit_id': None,
-                                        'gender': None, 'appointment_date': None,
-                                        'judge_type_id': None})
-
-    result = get_gender_donut_chart(filtered)
-
-
 def generate_word_cloud(summary_texts):
     """Generates the word cloud itself with the 
     correct design."""
@@ -186,3 +171,44 @@ def get_summary_texts_from_db(conn, case_no):
     except Exception as e:
         st.error(f"Error fetching summary texts from database: {e}")
         return summary_texts
+
+
+def standardise_verdicts(verdict: str) -> str:
+    '''Standardises a verdict to return either 'Claimant' or 'Defendant.'''
+
+    if 'claimant' in verdict.lower():
+        return 'Claimant'
+
+    if 'defendant' in verdict.lower():
+        return 'Defendant'
+
+    return None
+
+
+def get_verdicts_stacked_bar_chart(data):
+
+    data['verdict'] = data['verdict'].apply(standardise_verdicts)
+
+    data = data[data['circuit_id'] != 1]
+
+    chart = alt.Chart(data).mark_bar().encode(
+        y=alt.Y('circuit_name:N').title('Location'),
+        x=alt.X('count(verdict):Q').title('Number of cases'),
+        color=alt.Color('verdict').title('Verdict'))
+
+    return chart
+
+
+if __name__ == "__main__":
+
+    load_dotenv()
+
+    CONN = get_db_connection(ENV)
+
+    DATA = get_data_from_db(CONN)
+
+    filtered = get_filtered_data(DATA, {'judge_id': None, 'circuit_id': None,
+                                        'gender': None, 'appointment_date': None,
+                                        'judge_type_id': None})
+
+    result = get_gender_donut_chart(filtered)
