@@ -1,7 +1,7 @@
 '''This file contains charts for the streamlit dashboard.'''
 
 from os import environ as ENV
-
+import streamlit as st
 import altair as alt
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -9,6 +9,7 @@ import pandas as pd
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 from pywaffle import Waffle
+from wordcloud import WordCloud, STOPWORDS
 
 
 def get_db_connection(config) -> connect:
@@ -48,12 +49,21 @@ def get_data_from_db(conn: connect) -> pd.DataFrame:
 
 
 def get_filtered_data(data: pd.DataFrame, filters: dict):
-    '''Filters a dataframe. Takes in a dictionary with keys judge_id, 
-    circuit_id, gender, appointment_date and judge_type_id.'''
+    '''Filters a dataframe. Takes in a dictionary with keys type_id, judge_id, 
+    circuit_id, gender, and appointed.'''
 
     for key in filters.keys():
         if filters[key]:
-            data = data[data[key] == filters[key]]
+            if key == "circuit_id":
+                data = data[data[key].isin(filters[key])]
+            elif key == "appointed":
+                data = data[data[key].apply(
+                    lambda x: x >= filters[key][0] and x <= filters[key][1])]
+            else:
+                data = data[data[key] == filters[key]]
+
+    if len(data) == 0:
+        return "No data for chosen filters."
 
     return data
 
@@ -183,6 +193,64 @@ def get_case_count_line_chart(conn: connect) -> alt.Chart:
         x=alt.X("transcript_date", title="Month of Case"),
         y=alt.Y("count", title="Number of Cases"),
     )
+    
+    
+def generate_word_cloud(summary_texts):
+    """Generates the word cloud itself with the 
+    correct design."""
+    background_color = '#0e1117'
+    combined_text = ' '.join(summary_texts)
+    word_cloud = WordCloud(width=800, height=400, background_color=background_color,
+                           stopwords=STOPWORDS, contour_width=0,
+                           max_font_size=80, min_font_size=10,
+                           relative_scaling=0.5, random_state=42).generate(combined_text)
+    return word_cloud
+
+
+def get_summary_texts_from_db(conn, case_no):
+    """Gets the summary from the transcripts and 
+    adds it to a list."""
+    summary_texts = []
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT summary FROM transcript WHERE case_no = %s
+                    """
+            cur.execute(query, (case_no,))
+            rows = cur.fetchall()
+            for row in rows:
+                summary_text = row.get('summary')
+                if summary_text:
+                    summary_texts.append(summary_text)
+            return summary_texts
+
+    except Exception as e:
+        st.error(f"Error fetching summary texts from database: {e}")
+        return summary_texts
+
+
+def standardise_verdicts(verdict: str) -> str:
+    '''Standardises a verdict to return either 'Claimant' or 'Defendant.'''
+
+    if 'claimant' in verdict.lower():
+        return 'Claimant'
+
+    if 'defendant' in verdict.lower():
+        return 'Defendant'
+
+    return None
+
+
+def get_verdicts_stacked_bar_chart(data):
+
+    data['verdict'] = data['verdict'].apply(standardise_verdicts)
+
+    data = data[data['circuit_id'] != 1]
+
+    chart = alt.Chart(data).mark_bar().encode(
+        y=alt.Y('circuit_name:N').title('Location'),
+        x=alt.X('count(verdict):Q').title('Number of cases'),
+        color=alt.Color('verdict').title('Verdict'))
 
     return chart
 
