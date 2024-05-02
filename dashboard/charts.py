@@ -59,6 +59,20 @@ def get_filtered_data(data: pd.DataFrame, filters: dict):
     return data
 
 
+def get_judges_appointed(conn: connect) -> pd.DataFrame:
+    '''Returns the judge counts grouped by gender and appointment.'''
+
+    query = """
+                SELECT appointed, gender, count(judge_id) FROM judge
+                GROUP BY appointed, gender;
+                """
+    with conn.cursor() as cur:
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return pd.DataFrame(rows)
+
+
 def get_gender_donut_chart(data: pd.DataFrame):
     '''Returns a donut chart showing judge genders.'''
 
@@ -68,7 +82,7 @@ def get_gender_donut_chart(data: pd.DataFrame):
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
     ).properties(
-        title='Judge gender split')
+        title='Judge Gender Split')
 
     return chart
 
@@ -104,6 +118,25 @@ def get_waffle_chart(data: pd.DataFrame):
     )
 
     return fig
+
+
+def get_judge_count_line_chart(conn: connect) -> alt.Chart:
+    '''Returns the line graph for judge appointment count over time.'''
+
+    data = get_judges_appointed(conn)
+    data["appointed"] = pd.to_datetime(data["appointed"])
+    judge_count = data.set_index("appointed")
+
+    judge_count = judge_count.groupby(
+        ['gender', pd.Grouper(freq='Y')]).count().reset_index()
+
+    chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
+        x=alt.X("appointed", title="Year of Appointment"),
+        y=alt.Y("count", title="Number of Judges"),
+        color=alt.Color('gender:N', title='Gender')
+    )
+
+    return chart
 
 
 if __name__ == "__main__":
