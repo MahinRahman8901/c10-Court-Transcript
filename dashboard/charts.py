@@ -143,6 +143,24 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     judge_count = judge_count.groupby(
         ['gender', pd.Grouper(freq='YE')]).count().reset_index()
 
+    # Adding counts for years that don't have values
+    for i in range(1999, 2025):
+
+        if not ((judge_count['gender'] == "M") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "M", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
+
+        if not ((judge_count['gender'] == "F") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "F", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
+
+        if not ((judge_count['gender'] == "X") & (judge_count['appointed'] == pd.Timestamp(year=i, month=12, day=31))).any():
+            row = pd.DataFrame({"gender": "X", "appointed": pd.Timestamp(
+                year=i, month=12, day=31), "count": 0}, index=[0])
+            judge_count = pd.concat([judge_count, row], ignore_index=True)
+
     chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
         y=alt.Y("count", title="Number of Judges"),
