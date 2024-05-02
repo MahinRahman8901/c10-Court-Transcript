@@ -11,7 +11,7 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart
+from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart, get_judge_count_line_chart
 
 
 def extract_id_from_string(string: str) -> int:
@@ -244,7 +244,7 @@ if __name__ == "__main__":
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
             # judge count over appointment date line graph
-            pass
+            st.altair_chart(get_judge_count_line_chart(CONN))
 
         with judge_cols[1]:
             # judge gender donut chart
