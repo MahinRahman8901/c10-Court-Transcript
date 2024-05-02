@@ -81,7 +81,7 @@ def get_gender_donut_chart(data: pd.DataFrame):
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
     ).properties(
-        title='Judge gender split')
+        title='Judge Gender Split')
 
     return chart
 
@@ -129,7 +129,7 @@ def get_judge_count_line_chart(conn):
     judge_count = judge_count.groupby(
         ['gender', pd.Grouper(freq='Y')]).count().reset_index()
 
-    chart = alt.Chart(judge_count).mark_line().encode(
+    chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
         y=alt.Y("count", title="Number of Judges"),
         color=alt.Color('gender:N', title='Gender')
