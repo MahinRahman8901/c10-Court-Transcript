@@ -101,11 +101,10 @@ def get_gender_donut_chart(data: pd.DataFrame):
 
     genders = data.value_counts("gender").reset_index()
 
-    chart = alt.Chart(genders, title='Genders').mark_arc(innerRadius=50).encode(
+    chart = alt.Chart(genders).mark_arc(innerRadius=50).encode(
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
-    ).properties(
-        title='Judge Gender Split')
+    )
 
     return chart
 
@@ -169,7 +168,7 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
                 year=i, month=12, day=31), "count": 0}, index=[0])
             judge_count = pd.concat([judge_count, row], ignore_index=True)
 
-    chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
+    chart = alt.Chart(judge_count).mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
         y=alt.Y("count", title="Number of Judges"),
         color=alt.Color('gender:N', title='Gender')
@@ -189,7 +188,7 @@ def get_case_count_line_chart(conn: connect) -> alt.Chart:
     case_count = case_count.groupby(
         [pd.Grouper(freq='YE')]).count().reset_index()
 
-    chart = alt.Chart(case_count, title="Case Count / Time").mark_line().encode(
+    chart = alt.Chart(case_count).mark_line().encode(
         x=alt.X("transcript_date", title="Month of Case"),
         y=alt.Y("count", title="Number of Cases"),
     )
