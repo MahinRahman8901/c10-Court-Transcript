@@ -52,6 +52,8 @@ def get_judge_verdicts(conn: connect, judge_id: str, verdict: str) -> int:
 
 
 def get_judge_appointed(conn: connect):
+    '''Returns the judge counts grouped by gender and appointment.'''
+
     query = """
                 SELECT appointed, gender, count(judge_id) FROM judge
                 GROUP BY appointed, gender;
@@ -91,6 +93,8 @@ def get_waffle_chart(conn: connect, judge_id):
 
 
 def get_judge_count_line_chart(conn):
+    '''Returns the line graph for judge appointment count over time.'''
+
     data = get_judge_appointed(conn)
     data["appointed"] = pd.to_datetime(data["appointed"])
     judge_count = data.set_index("appointed")
