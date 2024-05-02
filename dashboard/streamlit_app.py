@@ -167,13 +167,14 @@ def compile_inputs_as_dict(conn: connect, judge_type: str = None, circuits: str 
             circuits = cur.fetchall()
             circuits = [circuit["circuit_id"] for circuit in circuits]
 
-    judge_id = extract_id_from_string(judge)
+    if judge:
+        judge = extract_id_from_string(judge)
 
-    inputs = {"judge_id": judge_id,
+    inputs = {"judge_id": judge,
               "circuit_id": circuits,
               "gender": gender,
-              "appointment_date": date,
-              "judge_type_id": judge_type}
+              "appointed": date,
+              "type_id": judge_type}
 
     return inputs
 
@@ -332,7 +333,10 @@ if __name__ == "__main__":
 
         with judge_cols[1]:
             # judge gender donut chart
-            st.altair_chart(get_gender_donut_chart(filtered_data))
+            if isinstance(filtered_data, str):
+                st.write(filtered_data)
+            else:
+                st.altair_chart(get_gender_donut_chart(filtered_data))
 
         case_cols = st. columns([.6, .4])
         with case_cols[0]:
@@ -362,7 +366,10 @@ if __name__ == "__main__":
         verdict_cols = st.columns([.6, .4])
         with verdict_cols[0]:
             # verdict waffle chart
-            st.pyplot(get_waffle_chart(filtered_data))
+            if isinstance(filtered_data, str):
+                st.write(filtered_data)
+            else:
+                st.pyplot(get_waffle_chart(filtered_data))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart

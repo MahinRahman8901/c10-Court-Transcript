@@ -49,12 +49,21 @@ def get_data_from_db(conn: connect) -> pd.DataFrame:
 
 
 def get_filtered_data(data: pd.DataFrame, filters: dict):
-    '''Filters a dataframe. Takes in a dictionary with keys judge_id, 
-    circuit_id, gender, appointment_date and judge_type_id.'''
+    '''Filters a dataframe. Takes in a dictionary with keys type_id, judge_id, 
+    circuit_id, gender, and appointed.'''
 
     for key in filters.keys():
         if filters[key]:
-            data = data[data[key] == filters[key]]
+            if key == "circuit_id":
+                data = data[data[key].isin(filters[key])]
+            elif key == "appointed":
+                data = data[data[key].apply(
+                    lambda x: x >= filters[key][0] and x <= filters[key][1])]
+            else:
+                data = data[data[key] == filters[key]]
+
+    if len(data) == 0:
+        return "No data for chosen filters."
 
     return data
 
@@ -93,9 +102,7 @@ def get_waffle_chart(data: pd.DataFrame):
     claimants = data[data['verdict'].str.lower().str.contains('claimant')]
     defendants = data[data['verdict'].str.lower().str.contains('defendant')]
 
-    print(len(claimants) + len(defendants))
     waffle_rows = (len(claimants) + len(defendants)) // 100
-    print(waffle_rows)
 
     if waffle_rows == 0:
         waffle_rows = 1
