@@ -196,7 +196,7 @@ def generate_word_cloud(summary_texts):
     word_cloud = WordCloud(width=800, height=400, background_color=background_color,
                            stopwords=STOPWORDS, contour_width=0,
                            max_font_size=80, min_font_size=10,
-                           relative_scaling=0.5, random_state=42).generate(combined_text)
+                           relative_scaling=0.5, random_state=42, max_words=50, colormap='Pastel1_r').generate(combined_text)
     return word_cloud
 
 
