@@ -214,10 +214,10 @@ def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
 def write_judge_profile(judge: dict) -> str:
     """Returns a formatted string of judge info."""
 
-    return f"""name: {judge["name"]}  |  gender: {judge["gender"]}\n
-judge type: {judge["type"]}\n
-circuit: {judge["circuit"]}\n
-appointed: {judge["appointed"]}
+    return f"""Name: {judge["name"]}  |  Gender: {judge["gender"]}\n
+Judge Type: {judge["type"]}\n
+Circuit: {judge["circuit"]}\n
+Appointed: {judge["appointed"]}
 """
 
 
