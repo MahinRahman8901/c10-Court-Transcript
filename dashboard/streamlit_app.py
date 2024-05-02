@@ -258,8 +258,6 @@ if __name__ == "__main__":
 
     data = get_data_from_db(CONN)
 
-    st.altair_chart(get_verdicts_stacked_bar_chart(data))
-
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
         st.subheader(body="Judge Search", divider="grey")
@@ -304,7 +302,7 @@ if __name__ == "__main__":
 
     with visualizations:
         data = get_data_from_db(CONN)
-        st.dataframe(data)
+        # st.dataframe(data)
 
         # controls/filters (may need columns to organize the controls)
         controls = st.columns(5)
@@ -330,29 +328,28 @@ if __name__ == "__main__":
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
             # judge count over appointment date line graph
-            st.altair_chart(get_judge_count_line_chart(CONN))
-
-        with judge_cols[1]:
-            # judge gender donut chart
+            st.subheader("Waffle Chart")
             if isinstance(filtered_data, str):
                 st.write(filtered_data)
             else:
-                st.altair_chart(get_gender_donut_chart(filtered_data))
+                st.pyplot(get_waffle_chart(filtered_data))
+
+        with judge_cols[1]:
+            # judge gender donut chart
+            st.subheader("Verdicts Bar Chart")
+            st.altair_chart(get_verdicts_stacked_bar_chart(data))
 
         case_cols = st. columns([.6, .4])
-        with case_cols[0]:
-            # case count over doc date line graph
-            st.altair_chart(get_case_count_line_chart(CONN))
-
         with case_cols[1]:
-            st.title("Word Cloud")
+            # case count over doc date line graph
+            st.subheader("Word Cloud")
 
             case_no = st.text_input("Enter Case Number:")
             if case_no:
                 summary_texts = get_summary_texts_from_db(CONN, case_no)
 
                 if summary_texts:
-                    st.subheader("Word Cloud")
+                    # st.subheader("Word Cloud")
                     word_cloud = generate_word_cloud(summary_texts)
                     background_color = '#0e1117'
                     plt.figure(figsize=(20, 10), facecolor=background_color)
@@ -364,14 +361,20 @@ if __name__ == "__main__":
                     st.warning(
                         "No summary text found in the database for the entered case number.")
 
-        verdict_cols = st.columns([.6, .4])
-        with verdict_cols[0]:
-            # verdict waffle chart
+        with case_cols[0]:
+            st.subheader("Judge Gender Split")
             if isinstance(filtered_data, str):
                 st.write(filtered_data)
             else:
-                st.pyplot(get_waffle_chart(filtered_data))
+                st.altair_chart(get_gender_donut_chart(filtered_data))
+
+        verdict_cols = st.columns([.6, .4])
+        with verdict_cols[0]:
+            st.subheader("Case Count / Time")
+            # verdict waffle chart
+            st.altair_chart(get_case_count_line_chart(CONN))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart
-            pass
+            st.subheader("Case Count / Time")
+            st.altair_chart(get_judge_count_line_chart(CONN))
