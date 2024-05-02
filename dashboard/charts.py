@@ -1,7 +1,7 @@
 '''This file contains charts for the streamlit dashboard.'''
 
 from os import environ as ENV
-import streamlit as st
+
 import altair as alt
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -9,7 +9,6 @@ import pandas as pd
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 from pywaffle import Waffle
-from wordcloud import WordCloud, STOPWORDS
 
 
 def get_db_connection(config) -> connect:
@@ -54,26 +53,21 @@ def get_filtered_data(data: pd.DataFrame, filters: dict):
 
     for key in filters.keys():
         if filters[key]:
-            data = data[data[key] == filters[key]]
+            if key == "circuit_id":
+                data = data[data[key].apply(lambda x: x in filters[key])]
+            if key == "appointed":
+                data = data[data[key].apply(
+                    lambda x: x >= filters[key][0] and x <= filters[key][1])]
+            else:
+                data = data[data[key] == filters[key]]
+
+    if len(data) == 0:
+        return "No data for chosen filters."
 
     return data
 
 
-def get_judges_appointed(conn: connect) -> pd.DataFrame:
-    '''Returns the judge counts grouped by gender and appointment.'''
-
-    query = """
-                SELECT appointed, gender, count(judge_id) FROM judge
-                GROUP BY appointed, gender;
-                """
-    with conn.cursor() as cur:
-        cur.execute(query)
-        rows = cur.fetchall()
-
-    return pd.DataFrame(rows)
-
-
-def get_gender_donut_chart(data: pd.DataFrame):
+def get_gender_donut_chart(data: pd.DataFrame) -> alt.Chart:
     '''Returns a donut chart showing judge genders.'''
 
     genders = data.value_counts("gender").reset_index()
@@ -82,20 +76,18 @@ def get_gender_donut_chart(data: pd.DataFrame):
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
     ).properties(
-        title='Judge Gender Split')
+        title='Judge gender split')
 
     return chart
 
 
-def get_waffle_chart(data: pd.DataFrame):
+def get_waffle_chart(data: pd.DataFrame) -> alt.Chart:
     '''Returns a waffle chart that shows verdicts which ruled in favour of claimant vs defendant.'''
 
     claimants = data[data['verdict'].str.lower().str.contains('claimant')]
     defendants = data[data['verdict'].str.lower().str.contains('defendant')]
 
-    print(len(claimants) + len(defendants))
     waffle_rows = (len(claimants) + len(defendants)) // 100
-    print(waffle_rows)
 
     if waffle_rows == 0:
         waffle_rows = 1
@@ -120,23 +112,9 @@ def get_waffle_chart(data: pd.DataFrame):
     return fig
 
 
-def get_judge_count_line_chart(conn: connect) -> alt.Chart:
-    '''Returns the line graph for judge appointment count over time.'''
-
-    data = get_judges_appointed(conn)
-    data["appointed"] = pd.to_datetime(data["appointed"])
-    judge_count = data.set_index("appointed")
-
-    judge_count = judge_count.groupby(
-        ['gender', pd.Grouper(freq='Y')]).count().reset_index()
-
-    chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
-        x=alt.X("appointed", title="Year of Appointment"),
-        y=alt.Y("count", title="Number of Judges"),
-        color=alt.Color('gender:N', title='Gender')
-    )
-
-    return chart
+def get_verdict_by_circuit_chart(data: pd.DataFrame) -> alt.Chart:
+    '''Returns a normalised stacked bar chart that shows
+    the ratio the  different circuits ruled in favour of claimant vs defendant.'''
 
 
 if __name__ == "__main__":
@@ -152,37 +130,3 @@ if __name__ == "__main__":
                                         'judge_type_id': None})
 
     result = get_gender_donut_chart(filtered)
-
-
-def generate_word_cloud(summary_texts):
-    """Generates the word cloud itself with the 
-    correct design."""
-    background_color = '#0e1117'
-    combined_text = ' '.join(summary_texts)
-    word_cloud = WordCloud(width=800, height=400, background_color=background_color,
-                           stopwords=STOPWORDS, contour_width=0,
-                           max_font_size=80, min_font_size=10,
-                           relative_scaling=0.5, random_state=42).generate(combined_text)
-    return word_cloud
-
-
-def get_summary_texts_from_db(conn, case_no):
-    """Gets the summary from the transcripts and 
-    adds it to a list."""
-    summary_texts = []
-    try:
-        with conn.cursor() as cur:
-            query = """
-                    SELECT summary FROM transcript WHERE case_no = %s
-                    """
-            cur.execute(query, (case_no,))
-            rows = cur.fetchall()
-            for row in rows:
-                summary_text = row.get('summary')
-                if summary_text:
-                    summary_texts.append(summary_text)
-            return summary_texts
-
-    except Exception as e:
-        st.error(f"Error fetching summary texts from database: {e}")
-        return summary_texts

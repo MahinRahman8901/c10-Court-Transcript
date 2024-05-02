@@ -9,10 +9,10 @@ from psycopg2 import connect
 import pandas as pd
 import altair as alt
 from pywaffle import Waffle
+from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart, get_summary_texts_from_db, generate_word_cloud, get_judge_count_line_chart
-
+from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart
 from case_profiles import (get_case_query,
                            get_case_information_by_name,
                            get_case_information_by_case_number,
@@ -163,8 +163,8 @@ def compile_inputs_as_dict(conn: connect, judge_type: str = None, circuits: str 
     inputs = {"judge_id": judge_id,
               "circuit_id": circuits,
               "gender": gender,
-              "appointment_date": date,
-              "judge_type_id": judge_type}
+              "appointed": date,
+              "type_id": judge_type}
 
     return inputs
 
@@ -234,6 +234,33 @@ def get_data_from_db(conn: connect) -> pd.DataFrame:
     df = pd.DataFrame(rows)
 
     return df
+
+
+def generate_word_cloud(summary_texts):
+    combined_text = ' '.join(summary_texts)
+    word_cloud = WordCloud(width=800, height=400, background_color='white',
+                           stopwords=STOPWORDS).generate(combined_text)
+    return word_cloud
+
+
+def get_summary_texts_from_db(conn, case_no):
+    summary_texts = []
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT summary FROM transcript WHERE case_no = %s
+                    """
+            cur.execute(query, (case_no,))
+            rows = cur.fetchall()
+            for row in rows:
+                summary_text = row.get('summary')
+                if summary_text:
+                    summary_texts.append(summary_text)
+            return summary_texts
+
+    except Exception as e:
+        st.error(f"Error fetching summary texts from database: {e}")
+        return summary_texts
 
 
 if __name__ == "__main__":
@@ -317,11 +344,14 @@ if __name__ == "__main__":
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
             # judge count over appointment date line graph
-            st.altair_chart(get_judge_count_line_chart(CONN))
+            pass
 
         with judge_cols[1]:
             # judge gender donut chart
-            st.altair_chart(get_gender_donut_chart(filtered_data))
+            if isinstance(filtered_data, str):
+                st.write(filtered_data)
+            else:
+                st.altair_chart(get_gender_donut_chart(filtered_data))
 
         case_cols = st. columns([.6, .4])
         with case_cols[0]:
@@ -329,7 +359,7 @@ if __name__ == "__main__":
             pass
 
         with case_cols[1]:
-            st.title("Word Cloud")
+            st.title("Word Cloud Generator")
 
             case_no = st.text_input("Enter Case Number:")
             if case_no:
@@ -338,11 +368,10 @@ if __name__ == "__main__":
                 if summary_texts:
                     st.subheader("Word Cloud")
                     word_cloud = generate_word_cloud(summary_texts)
-                    background_color = '#0e1117'
-                    plt.figure(figsize=(20, 10), facecolor=background_color)
-                    plt.imshow(word_cloud)
-                    plt.axis("off")
-                    plt.tight_layout(pad=0)
+                    word_cloud = generate_word_cloud(summary_texts)
+                    plt.figure(figsize=(10, 5))
+                    plt.imshow(word_cloud, interpolation='bilinear')
+                    plt.axis('off')
                     st.pyplot()
                 else:
                     st.warning(
@@ -351,7 +380,10 @@ if __name__ == "__main__":
         verdict_cols = st.columns([.6, .4])
         with verdict_cols[0]:
             # verdict waffle chart
-            st.pyplot(get_waffle_chart(filtered_data))
+            if isinstance(filtered_data, str):
+                st.write(filtered_data)
+            else:
+                st.pyplot(get_waffle_chart(filtered_data))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart
