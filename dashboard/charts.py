@@ -106,9 +106,7 @@ def get_waffle_chart(data: pd.DataFrame):
     claimants = data[data['verdict'].str.lower().str.contains('claimant')]
     defendants = data[data['verdict'].str.lower().str.contains('defendant')]
 
-    print(len(claimants) + len(defendants))
     waffle_rows = (len(claimants) + len(defendants)) // 100
-    print(waffle_rows)
 
     if waffle_rows == 0:
         waffle_rows = 1
