@@ -38,9 +38,9 @@ Our automated data pipeline will:
 
 ### Visualization (Dashboard)
 
-- XXXXXX.
-- XXXXXX.
-- XXXXXX.
+- Can view a wordcloud of the key words from the summary of the case
+- Can see judges appointment over time
+- Can view the judges and their cases through the search dropdown
 
 ### API
 
@@ -117,20 +117,23 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ## Dashboard
 
+![DASHBOARD](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Screenshot%202024-05-02%20at%2016.13.26.png?raw=true)
+
 ### Features
-- **XXXXXX:**
-- **XXXXXX:**
-- **XXXXXX:** 
+- **View Judges & Their Cases:** Can use the dropdown to view all the judges and the case information they are working on.
+- **Various Graphs:** Can look through the various graphs and read the metrics, this will allow the user to gauge a better idea of the cases.
+- **WordCloud:** Can use the wordcloud to quickly view the keywords and ideas from the summary of the case, via its case id. 
 
 ### Usage
-- XXXXXXXXX
-- XXXXXXXXX
-- XXXXXXXXX
+- Users can access the dashboard and view various metrics about different cases and judges.
+
 
 ### Data Sources
 - **Database:** The app retrieves real-time judge and court data from a database using SQL queries.
 
 ## API
+
+![API HOME](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Screenshot%202024-05-02%20at%2016.16.45.png?raw=true)
 
 Access to API via ECS: http://3.8.5.146:5000
 
@@ -186,6 +189,10 @@ This will include all the `.env` files and both AWS Access and Security Keys.
 | COMM_QUERY_EXTENSION    | Commercial Court Query        |
 | STORAGE_FOLDER          | Storage Folder Name           |
 | OPENAI_API_KEY          | GPT API Key                   |
+| SUBNET_GROUP            | VPC Subnets                   |
+| VPC_ID                  | The ID of the VPC             |
+| ECS_ROLE                | ECS Execution Role            |
+| ECS_CLUSTER             | Name of the cluster           |
 
 ## Prerequisites
 
