@@ -267,8 +267,9 @@ if __name__ == "__main__":
             judge, cases = get_judge_from_db(CONN, id)
             profile = write_judge_profile(judge)
             st.write(profile)
-            st.dataframe(cases, hide_index=True,
-                         use_container_width=True)
+            if cases:
+                st.dataframe(cases, hide_index=True,
+                             use_container_width=True)
         else:
             st.write("*(no judge selected)*")
 
