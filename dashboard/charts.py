@@ -153,6 +153,8 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
 
 
 def get_case_count_line_chart(conn: connect) -> alt.Chart:
+    '''Returns the line graph for case count over time.'''
+
     data = get_cases(conn)
 
     data["transcript_date"] = pd.to_datetime(data["transcript_date"])
