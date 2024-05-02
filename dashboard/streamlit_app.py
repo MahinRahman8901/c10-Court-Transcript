@@ -20,7 +20,6 @@ from charts import (get_db_connection,
                     generate_word_cloud,
                     get_judge_count_line_chart,
                     get_verdicts_stacked_bar_chart,
-                    get_judges_appointed,
                     get_case_count_line_chart)
 
 from case_profiles import (get_case_query,
@@ -325,7 +324,7 @@ if __name__ == "__main__":
                                         viz_gender_selection, viz_date_selection, viz_judge_selection)
         filtered_data = get_filtered_data(data, inputs)
 
-        judge_cols = st.columns([.6, .4])
+        judge_cols = st.columns([.4, .2])
         with judge_cols[0]:
             # judge count over appointment date line graph
             st.subheader("Waffle Chart")
@@ -339,7 +338,7 @@ if __name__ == "__main__":
             st.subheader("Verdicts Bar Chart")
             st.altair_chart(get_verdicts_stacked_bar_chart(data))
 
-        case_cols = st. columns([.6, .4])
+        case_cols = st. columns([.4, .2])
         with case_cols[1]:
             # case count over doc date line graph
             st.subheader("Word Cloud")
@@ -368,7 +367,7 @@ if __name__ == "__main__":
             else:
                 st.altair_chart(get_gender_donut_chart(filtered_data))
 
-        verdict_cols = st.columns([.6, .4])
+        verdict_cols = st.columns([.4, .2])
         with verdict_cols[0]:
             st.subheader("Case Count / Time")
             # verdict waffle chart
