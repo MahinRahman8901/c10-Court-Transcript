@@ -283,7 +283,11 @@ if __name__ == "__main__":
             else:
                 case_info = get_case_information_by_case_number(
                     CONN, case_search)
+
+            if case_info is None:
+                st.write("Case not found.")
         else:
+
             case_info = False
 
         if case_info:
@@ -298,7 +302,7 @@ if __name__ == "__main__":
             st.write(f"Summary: {summary}")
             st.write(f"Verdict: {verdict}")
         else:
-            st.write("Case not found.")
+            pass
 
     with visualizations:
         data = get_data_from_db(CONN)
@@ -349,7 +353,6 @@ if __name__ == "__main__":
                 summary_texts = get_summary_texts_from_db(CONN, case_no)
 
                 if summary_texts:
-                    # st.subheader("Word Cloud")
                     word_cloud = generate_word_cloud(summary_texts)
                     background_color = '#0e1117'
                     plt.figure(figsize=(20, 10), facecolor=background_color)
