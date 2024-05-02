@@ -1,4 +1,5 @@
 import streamlit as st
+import matplotlib.pyplot as plt
 from os import environ as ENV
 import re
 from datetime import datetime, timezone, timedelta
@@ -11,12 +12,21 @@ from pywaffle import Waffle
 from wordcloud import WordCloud, STOPWORDS
 
 from layout import set_page_config, get_sidebar
-from charts import get_db_connection, get_gender_donut_chart, get_waffle_chart, get_judge_count_line_chart
+
+from charts import get_db_connection, get_data_from_db, get_filtered_data, get_gender_donut_chart, get_waffle_chart, get_judge_count_line_chart
+from case_profiles import (get_case_query,
+                           get_case_information_by_name,
+                           get_case_information_by_case_number,
+                           find_case_query_type)
 
 
 def extract_id_from_string(string: str) -> int:
     """Returns id in a bracket before string info."""
-    return int(re.match(r"\((\d+)\)", string).group(1))
+
+    if string:
+        return int(re.match(r"\((\d+)\)", string).group(1))
+
+    return None
 
 
 # ========== FUNCTIONS: SELECTIONS ==========
@@ -59,6 +69,7 @@ def get_circuit_selection(conn: connect, key: str) -> st.multiselect:
     judge_selection = st.multiselect(key=key,
                                      placeholder="select circuit(s)",
                                      options=rows,
+                                     default=None,
                                      label="judge selection",
                                      label_visibility="hidden",)
 
@@ -120,6 +131,43 @@ def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
                                    label_visibility="hidden")
 
     return judge_selection
+
+
+def compile_inputs_as_dict(conn: connect, judge_type: str = None, circuits: str = None,
+                           gender: str = None, date: tuple = None, judge: str = None) -> dict:
+    """Returns input widget returns as a single dictionary"""
+
+    with conn.cursor() as cur:
+        if judge_type:
+            query_type = """
+                            SELECT judge_type_id
+                            FROM judge_type
+                            WHERE type_name = %s
+                            """
+            cur.execute(query_type, [judge_type])
+            judge_type = cur.fetchone()["judge_type_id"]
+
+        if circuits:
+            placeholders = ', '.join([f"'{circuit}'" for circuit in circuits])
+            st.write(placeholders)
+            query_circuit = f"""
+                            SELECT circuit_id
+                            FROM circuit
+                            WHERE name IN ({placeholders})
+                            """
+            cur.execute(query_circuit)
+            circuits = cur.fetchall()
+            circuits = [circuit["circuit_id"] for circuit in circuits]
+
+    judge_id = extract_id_from_string(judge)
+
+    inputs = {"judge_id": judge_id,
+              "circuit_id": circuits,
+              "gender": gender,
+              "appointment_date": date,
+              "judge_type_id": judge_type}
+
+    return inputs
 
 
 # ========== FUNCTIONS: DATABASE ===========
@@ -189,6 +237,33 @@ def get_data_from_db(conn: connect) -> pd.DataFrame:
     return df
 
 
+def generate_word_cloud(summary_texts):
+    combined_text = ' '.join(summary_texts)
+    word_cloud = WordCloud(width=800, height=400, background_color='white',
+                           stopwords=STOPWORDS).generate(combined_text)
+    return word_cloud
+
+
+def get_summary_texts_from_db(conn, case_no):
+    summary_texts = []
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT summary FROM transcript WHERE case_no = %s
+                    """
+            cur.execute(query, (case_no,))
+            rows = cur.fetchall()
+            for row in rows:
+                summary_text = row.get('summary')
+                if summary_text:
+                    summary_texts.append(summary_text)
+            return summary_texts
+
+    except Exception as e:
+        st.error(f"Error fetching summary texts from database: {e}")
+        return summary_texts
+
+
 if __name__ == "__main__":
 
     load_dotenv()
@@ -198,13 +273,11 @@ if __name__ == "__main__":
 
     get_sidebar()
 
-    st.altair_chart(get_gender_donut_chart(CONN))
-
-    st.pyplot(get_waffle_chart(CONN, '593'))
+    data = get_data_from_db(CONN)
 
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
-        # judge profile
+        st.subheader(body="Judge Search", divider="grey")
         judge_profile_selection = get_judge_selection(
             CONN, "judge_profile_selection")
         if judge_profile_selection:
@@ -217,13 +290,38 @@ if __name__ == "__main__":
         else:
             st.write("*(no judge selected)*")
 
-        # court case profile
-        pass
+        st.subheader(body="Case Search", divider="grey")
+        case_search = get_case_query()
+
+        if case_search:
+            if find_case_query_type(case_search):
+                case_info = get_case_information_by_name(
+                    CONN, case_search)
+            else:
+                case_info = get_case_information_by_case_number(
+                    CONN, case_search)
+        else:
+            case_info = False
+
+        if case_info:
+            title = case_info.get("title")
+            date = case_info.get("transcript_date")
+            judge_name = case_info.get("name")
+            summary = case_info.get("summary")
+            verdict = case_info.get("verdict")
+            st.write(f"Title: {title}")
+            st.write(f"DOC: {date}")
+            st.write(f"Judge Name: {judge_name}")
+            st.write(f"Summary: {summary}")
+            st.write(f"Verdict: {verdict}")
+        else:
+            st.write("Case not found.")
 
     with visualizations:
         data = get_data_from_db(CONN)
+        st.dataframe(data)
 
-        # controls/filters (may need columns to organise the controls)
+        # controls/filters (may need columns to organize the controls)
         controls = st.columns(5)
         with controls[0]:
             viz_type_selection = get_judge_type_selection(
@@ -240,6 +338,9 @@ if __name__ == "__main__":
         with controls[4]:
             viz_judge_selection = get_judge_selection(
                 CONN, "viz_judge_selectbox")
+        inputs = compile_inputs_as_dict(CONN, viz_type_selection, viz_circuit_selection,
+                                        viz_gender_selection, viz_date_selection, viz_judge_selection)
+        filtered_data = get_filtered_data(data, inputs)
 
         judge_cols = st.columns([.6, .4])
         with judge_cols[0]:
@@ -248,7 +349,7 @@ if __name__ == "__main__":
 
         with judge_cols[1]:
             # judge gender donut chart
-            pass
+            st.altair_chart(get_gender_donut_chart(filtered_data))
 
         case_cols = st. columns([.6, .4])
         with case_cols[0]:
@@ -256,13 +357,28 @@ if __name__ == "__main__":
             pass
 
         with case_cols[1]:
-            # summary word cloud
-            pass
+            st.title("Word Cloud Generator")
+
+            case_no = st.text_input("Enter Case Number:")
+            if case_no:
+                summary_texts = get_summary_texts_from_db(CONN, case_no)
+
+                if summary_texts:
+                    st.subheader("Word Cloud")
+                    word_cloud = generate_word_cloud(summary_texts)
+                    word_cloud = generate_word_cloud(summary_texts)
+                    plt.figure(figsize=(10, 5))
+                    plt.imshow(word_cloud, interpolation='bilinear')
+                    plt.axis('off')
+                    st.pyplot()
+                else:
+                    st.warning(
+                        "No summary text found in the database for the entered case number.")
 
         verdict_cols = st.columns([.6, .4])
         with verdict_cols[0]:
             # verdict waffle chart
-            pass
+            st.pyplot(get_waffle_chart(filtered_data))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart

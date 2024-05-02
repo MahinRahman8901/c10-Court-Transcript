@@ -1,13 +1,13 @@
 '''This file contains charts for the streamlit dashboard.'''
 
-import streamlit as st
-import pandas as pd
-import altair as alt
-from psycopg2 import connect, sql
-from psycopg2.extras import RealDictCursor, RealDictRow
-from dotenv import load_dotenv
 from os import environ as ENV
+
+import altair as alt
+from dotenv import load_dotenv
 import matplotlib.pyplot as plt
+import pandas as pd
+from psycopg2 import connect
+from psycopg2.extras import RealDictCursor
 from pywaffle import Waffle
 
 
@@ -22,33 +22,40 @@ def get_db_connection(config) -> connect:
                    cursor_factory=RealDictCursor)
 
 
-def get_judge_genders(conn: connect) -> pd.DataFrame:
-    '''Queries the database for judge genders.'''
+def get_data_from_db(conn: connect) -> pd.DataFrame:
+    """Returns all data from the database as a pd.DF."""
 
     with conn.cursor() as cur:
         query = """
-                SELECT gender, count(judge_id) FROM judge
-                GROUP BY gender;
+                SELECT t.transcript_id, t.case_no, t.transcript_date, t.title, t.summary, t.verdict,
+                    j.judge_id, j.name AS judge, j.appointed, j.gender,
+                    jt.judge_type_id AS type_id, jt.type_name,
+                    c.circuit_id, c.name AS circuit_name
+                FROM transcript AS t
+                JOIN judge AS j
+                    ON t.judge_id = j.judge_id
+                JOIN judge_type AS jt
+                    ON j.judge_type_id = jt.judge_type_id
+                JOIN circuit AS c
+                    ON j.circuit_id = c.circuit_id
                 """
         cur.execute(query)
         rows = cur.fetchall()
 
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+
+    return df
 
 
-def get_judge_verdicts(conn: connect, judge_id: str, verdict: str) -> int:
-    '''Returns the number of cases with a certain verdict.'''
+def get_filtered_data(data: pd.DataFrame, filters: dict):
+    '''Filters a dataframe. Takes in a dictionary with keys judge_id, 
+    circuit_id, gender, appointment_date and judge_type_id.'''
 
-    with conn.cursor() as cur:
-        query = sql.SQL("""
-                SELECT transcript_id, verdict FROM transcript
-                WHERE verdict ILIKE '%{}%'
-                AND judge_id = {}
-                """).format(sql.SQL(verdict.lower()), sql.SQL(judge_id))
-        cur.execute(query)
-        rows = cur.fetchall()
+    for key in filters.keys():
+        if filters[key]:
+            data = data[data[key] == filters[key]]
 
-    return len(rows)
+    return data
 
 
 def get_judge_appointed(conn: connect):
@@ -63,28 +70,48 @@ def get_judge_appointed(conn: connect):
     return pd.DataFrame(rows)
 
 
-def get_gender_donut_chart(conn: connect):
+def get_gender_donut_chart(data: pd.DataFrame):
+    '''Returns a donut chart showing judge genders.'''
 
-    data = get_judge_genders(conn)
+    genders = data.value_counts("gender").reset_index()
 
-    chart = alt.Chart(data).mark_arc(innerRadius=50).encode(
-        theta='count',
-        color=alt.Color('gender').title('Gender')
-    )
+    chart = alt.Chart(genders, title='Genders').mark_arc(innerRadius=50).encode(
+        theta='count:Q',
+        color=alt.Color('gender:N').title('Gender')
+    ).properties(
+        title='Judge gender split')
 
     return chart
 
 
-def get_waffle_chart(conn: connect, judge_id):
+def get_waffle_chart(data: pd.DataFrame):
+    '''Returns a waffle chart that shows verdicts which ruled in favour of claimant vs defendant.'''
 
-    claimants = get_judge_verdicts(conn, judge_id, 'claimant')
-    defendants = get_judge_verdicts(conn, judge_id, 'defendant')
+    claimants = data[data['verdict'].str.lower().str.contains('claimant')]
+    defendants = data[data['verdict'].str.lower().str.contains('defendant')]
+
+    print(len(claimants) + len(defendants))
+    waffle_rows = (len(claimants) + len(defendants)) // 100
+    print(waffle_rows)
+
+    if waffle_rows == 0:
+        waffle_rows = 1
 
     fig = plt.figure(
         FigureClass=Waffle,
-        rows=5,
-        figsize=(20, 5),
-        values={'Claimants': claimants, 'Defendants': defendants}
+        rows=waffle_rows,
+        figsize=(20, 2),
+        values={'Claimant': len(claimants), 'Defendant': len(defendants)},
+        colors=['#5e67c7', '#e26571'],
+        facecolor='#0F1117',
+        title={
+            'label': 'Cases ruled in favour of the claimant vs the defendant',
+            'loc': 'left',
+            'fontdict': {
+                'fontsize': 20,
+                'color': '#FFFFFF'
+            }
+        }
     )
 
     return fig
@@ -113,6 +140,10 @@ if __name__ == "__main__":
 
     CONN = get_db_connection(ENV)
 
-    result = get_judge_verdicts(CONN, '3', 'defendant')
+    DATA = get_data_from_db(CONN)
 
-    print(result)
+    filtered = get_filtered_data(DATA, {'judge_id': None, 'circuit_id': None,
+                                        'gender': None, 'appointment_date': None,
+                                        'judge_type_id': None})
+
+    result = get_gender_donut_chart(filtered)
