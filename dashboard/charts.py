@@ -101,11 +101,10 @@ def get_gender_donut_chart(data: pd.DataFrame):
 
     genders = data.value_counts("gender").reset_index()
 
-    chart = alt.Chart(genders, title='Genders').mark_arc(innerRadius=50).encode(
+    chart = alt.Chart(genders).mark_arc(innerRadius=15).encode(
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
-    ).properties(
-        title='Judge Gender Split')
+    ).properties(width=225, height=225)
 
     return chart
 
@@ -116,7 +115,7 @@ def get_waffle_chart(data: pd.DataFrame):
     claimants = data[data['verdict'].str.lower().str.contains('claimant')]
     defendants = data[data['verdict'].str.lower().str.contains('defendant')]
 
-    waffle_rows = (len(claimants) + len(defendants)) // 100
+    waffle_rows = (len(claimants) + len(defendants)) // 50
 
     if waffle_rows == 0:
         waffle_rows = 1
@@ -128,14 +127,6 @@ def get_waffle_chart(data: pd.DataFrame):
         values={'Claimant': len(claimants), 'Defendant': len(defendants)},
         colors=['#5e67c7', '#e26571'],
         facecolor='#0F1117',
-        title={
-            'label': 'Cases ruled in favour of the claimant vs the defendant',
-            'loc': 'left',
-            'fontdict': {
-                'fontsize': 20,
-                'color': '#FFFFFF'
-            }
-        }
     )
 
     return fig
@@ -169,7 +160,7 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
                 year=i, month=12, day=31), "count": 0}, index=[0])
             judge_count = pd.concat([judge_count, row], ignore_index=True)
 
-    chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
+    chart = alt.Chart(judge_count).mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
         y=alt.Y("count", title="Number of Judges"),
         color=alt.Color('gender:N', title='Gender')
@@ -189,7 +180,7 @@ def get_case_count_line_chart(conn: connect) -> alt.Chart:
     case_count = case_count.groupby(
         [pd.Grouper(freq='YE')]).count().reset_index()
 
-    chart = alt.Chart(case_count, title="Case Count / Time").mark_line().encode(
+    chart = alt.Chart(case_count).mark_line().encode(
         x=alt.X("transcript_date", title="Month of Case"),
         y=alt.Y("count", title="Number of Cases"),
     )
@@ -205,7 +196,7 @@ def generate_word_cloud(summary_texts):
     word_cloud = WordCloud(width=800, height=400, background_color=background_color,
                            stopwords=STOPWORDS, contour_width=0,
                            max_font_size=80, min_font_size=10,
-                           relative_scaling=0.5, random_state=42).generate(combined_text)
+                           relative_scaling=0.5, random_state=42, max_words=50, colormap='Pastel1').generate(combined_text)
     return word_cloud
 
 

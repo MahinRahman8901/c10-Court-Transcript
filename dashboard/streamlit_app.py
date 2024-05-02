@@ -20,7 +20,6 @@ from charts import (get_db_connection,
                     generate_word_cloud,
                     get_judge_count_line_chart,
                     get_verdicts_stacked_bar_chart,
-                    get_judges_appointed,
                     get_case_count_line_chart)
 
 from case_profiles import (get_case_query,
@@ -53,7 +52,7 @@ def get_judge_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["judge"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a judge",
+                                   placeholder="name",
                                    options=rows,
                                    index=None,
                                    label="judge selection",
@@ -76,7 +75,7 @@ def get_circuit_selection(conn: connect, key: str) -> st.multiselect:
     rows = [item["circuit"] for item in rows]
 
     judge_selection = st.multiselect(key=key,
-                                     placeholder="select circuit(s)",
+                                     placeholder="circuit(s)",
                                      options=rows,
                                      default=None,
                                      label="judge selection",
@@ -99,7 +98,7 @@ def get_gender_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["gender"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a gender",
+                                   placeholder="gender",
                                    options=rows,
                                    index=None,
                                    label="gender selection",
@@ -133,7 +132,7 @@ def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["type_name"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a judge type",
+                                   placeholder="type",
                                    options=rows,
                                    index=None,
                                    label="judge type selection",
@@ -215,10 +214,10 @@ def get_judge_from_db(conn: connect, id: int) -> tuple[dict, list[dict]]:
 def write_judge_profile(judge: dict) -> str:
     """Returns a formatted string of judge info."""
 
-    return f"""name: {judge["name"]}  |  gender: {judge["gender"]}\n
-judge type: {judge["type"]}\n
-circuit: {judge["circuit"]}\n
-appointed: {judge["appointed"]}
+    return f"""Name: {judge["name"]}  |  Gender: {judge["gender"]}\n
+Judge Type: {judge["type"]}\n
+Circuit: {judge["circuit"]}\n
+Appointed: {judge["appointed"]}
 """
 
 
@@ -258,8 +257,6 @@ if __name__ == "__main__":
 
     data = get_data_from_db(CONN)
 
-    st.altair_chart(get_verdicts_stacked_bar_chart(data))
-
     profiles, visualizations = st.columns([.3, .7], gap="medium")
     with profiles:
         st.subheader(body="Judge Search", divider="grey")
@@ -270,8 +267,9 @@ if __name__ == "__main__":
             judge, cases = get_judge_from_db(CONN, id)
             profile = write_judge_profile(judge)
             st.write(profile)
-            st.dataframe(cases, hide_index=True,
-                         use_container_width=True)
+            if cases:
+                st.dataframe(cases, hide_index=True,
+                             use_container_width=True)
         else:
             st.write("*(no judge selected)*")
 
@@ -285,7 +283,11 @@ if __name__ == "__main__":
             else:
                 case_info = get_case_information_by_case_number(
                     CONN, case_search)
+
+            if case_info is None:
+                st.write("Case not found.")
         else:
+
             case_info = False
 
         if case_info:
@@ -300,11 +302,10 @@ if __name__ == "__main__":
             st.write(f"Summary: {summary}")
             st.write(f"Verdict: {verdict}")
         else:
-            st.write("Case not found.")
+            pass
 
     with visualizations:
         data = get_data_from_db(CONN)
-        st.dataframe(data)
 
         # controls/filters (may need columns to organize the controls)
         controls = st.columns(5)
@@ -327,32 +328,33 @@ if __name__ == "__main__":
                                         viz_gender_selection, viz_date_selection, viz_judge_selection)
         filtered_data = get_filtered_data(data, inputs)
 
-        judge_cols = st.columns([.6, .4])
+        judge_cols = st.columns(2)
         with judge_cols[0]:
             # judge count over appointment date line graph
-            st.altair_chart(get_judge_count_line_chart(CONN))
-
-        with judge_cols[1]:
-            # judge gender donut chart
+            st.subheader(
+                "Verdict Proportions")
             if isinstance(filtered_data, str):
                 st.write(filtered_data)
             else:
-                st.altair_chart(get_gender_donut_chart(filtered_data))
+                st.pyplot(get_waffle_chart(filtered_data))
 
-        case_cols = st. columns([.6, .4])
-        with case_cols[0]:
-            # case count over doc date line graph
-            st.altair_chart(get_case_count_line_chart(CONN))
+        with judge_cols[1]:
 
+            st.subheader("Verdicts By Circuit")
+            st.altair_chart(get_verdicts_stacked_bar_chart(data))
+
+        case_cols = st. columns(2)
         with case_cols[1]:
-            st.title("Word Cloud")
+            # case count over doc date line graph
+            st.subheader("Word Cloud")
 
-            case_no = st.text_input("Enter Case Number:")
+            case_no = st.text_input(label="judge selection",
+                                    label_visibility="hidden",
+                                    placeholder="Enter case number:")
             if case_no:
                 summary_texts = get_summary_texts_from_db(CONN, case_no)
 
                 if summary_texts:
-                    st.subheader("Word Cloud")
                     word_cloud = generate_word_cloud(summary_texts)
                     background_color = '#0e1117'
                     plt.figure(figsize=(20, 10), facecolor=background_color)
@@ -364,14 +366,20 @@ if __name__ == "__main__":
                     st.warning(
                         "No summary text found in the database for the entered case number.")
 
-        verdict_cols = st.columns([.6, .4])
-        with verdict_cols[0]:
-            # verdict waffle chart
+        with case_cols[0]:
+            st.subheader("Judge Gender Split")
             if isinstance(filtered_data, str):
                 st.write(filtered_data)
             else:
-                st.pyplot(get_waffle_chart(filtered_data))
+                st.altair_chart(get_gender_donut_chart(filtered_data))
+
+        verdict_cols = st.columns(2)
+        with verdict_cols[0]:
+            st.subheader("Case Count / Time")
+            # verdict waffle chart
+            st.altair_chart(get_case_count_line_chart(CONN))
 
         with verdict_cols[1]:
             # verdict by circuit bar chart
-            pass
+            st.subheader("Case Count / Time")
+            st.altair_chart(get_judge_count_line_chart(CONN))
