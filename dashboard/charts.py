@@ -101,10 +101,10 @@ def get_gender_donut_chart(data: pd.DataFrame):
 
     genders = data.value_counts("gender").reset_index()
 
-    chart = alt.Chart(genders).mark_arc(innerRadius=50).encode(
+    chart = alt.Chart(genders).mark_arc(innerRadius=15).encode(
         theta='count:Q',
         color=alt.Color('gender:N').title('Gender')
-    )
+    ).properties(width=225, height=225)
 
     return chart
 
