@@ -72,6 +72,20 @@ def get_judges_appointed(conn: connect) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def get_cases(conn: connect) -> pd.DataFrame:
+    '''Returns the case number and date.'''
+
+    query = """
+                SELECT COUNT(case_no), transcript_date FROM transcript
+                GROUP BY transcript_date;
+                """
+    with conn.cursor() as cur:
+        cur.execute(query)
+        rows = cur.fetchall()
+
+    return pd.DataFrame(rows)
+
+
 def get_gender_donut_chart(data: pd.DataFrame):
     '''Returns a donut chart showing judge genders.'''
 
@@ -127,12 +141,29 @@ def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     judge_count = data.set_index("appointed")
 
     judge_count = judge_count.groupby(
-        ['gender', pd.Grouper(freq='Y')]).count().reset_index()
+        ['gender', pd.Grouper(freq='YE')]).count().reset_index()
 
     chart = alt.Chart(judge_count, title="Judge Appointment Date / Time").mark_line().encode(
         x=alt.X("appointed", title="Year of Appointment"),
         y=alt.Y("count", title="Number of Judges"),
         color=alt.Color('gender:N', title='Gender')
+    )
+
+    return chart
+
+
+def get_case_count_line_chart(conn: connect) -> alt.Chart:
+    data = get_cases(conn)
+
+    data["transcript_date"] = pd.to_datetime(data["transcript_date"])
+    case_count = data.set_index("transcript_date")
+
+    case_count = case_count.groupby(
+        [pd.Grouper(freq='YE')]).count().reset_index()
+
+    chart = alt.Chart(case_count, title="Case Count / Time").mark_line().encode(
+        x=alt.X("transcript_date", title="Month of Case"),
+        y=alt.Y("count", title="Number of Cases"),
     )
 
     return chart
