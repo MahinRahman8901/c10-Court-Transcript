@@ -1,7 +1,7 @@
 '''This file contains charts for the streamlit dashboard.'''
 
 from os import environ as ENV
-
+import streamlit as st
 import altair as alt
 from dotenv import load_dotenv
 import matplotlib.pyplot as plt
@@ -9,6 +9,7 @@ import pandas as pd
 from psycopg2 import connect
 from psycopg2.extras import RealDictCursor
 from pywaffle import Waffle
+from wordcloud import WordCloud, STOPWORDS
 
 
 def get_db_connection(config) -> connect:
@@ -118,3 +119,37 @@ if __name__ == "__main__":
                                         'judge_type_id': None})
 
     result = get_gender_donut_chart(filtered)
+
+
+def generate_word_cloud(summary_texts):
+    """Generates the word cloud itself with the 
+    correct design."""
+    background_color = '#0e1117'
+    combined_text = ' '.join(summary_texts)
+    word_cloud = WordCloud(width=800, height=400, background_color=background_color,
+                           stopwords=STOPWORDS, contour_width=0,
+                           max_font_size=80, min_font_size=10,
+                           relative_scaling=0.5, random_state=42).generate(combined_text)
+    return word_cloud
+
+
+def get_summary_texts_from_db(conn, case_no):
+    """Gets the summary from the transcripts and 
+    adds it to a list."""
+    summary_texts = []
+    try:
+        with conn.cursor() as cur:
+            query = """
+                    SELECT summary FROM transcript WHERE case_no = %s
+                    """
+            cur.execute(query, (case_no,))
+            rows = cur.fetchall()
+            for row in rows:
+                summary_text = row.get('summary')
+                if summary_text:
+                    summary_texts.append(summary_text)
+            return summary_texts
+
+    except Exception as e:
+        st.error(f"Error fetching summary texts from database: {e}")
+        return summary_texts
