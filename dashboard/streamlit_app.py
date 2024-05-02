@@ -52,7 +52,7 @@ def get_judge_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["judge"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a judge",
+                                   placeholder="name",
                                    options=rows,
                                    index=None,
                                    label="judge selection",
@@ -75,7 +75,7 @@ def get_circuit_selection(conn: connect, key: str) -> st.multiselect:
     rows = [item["circuit"] for item in rows]
 
     judge_selection = st.multiselect(key=key,
-                                     placeholder="select circuit(s)",
+                                     placeholder="circuit(s)",
                                      options=rows,
                                      default=None,
                                      label="judge selection",
@@ -98,7 +98,7 @@ def get_gender_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["gender"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a gender",
+                                   placeholder="gender",
                                    options=rows,
                                    index=None,
                                    label="gender selection",
@@ -132,7 +132,7 @@ def get_judge_type_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["type_name"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="Select a judge type",
+                                   placeholder="type",
                                    options=rows,
                                    index=None,
                                    label="judge type selection",
@@ -348,7 +348,9 @@ if __name__ == "__main__":
             # case count over doc date line graph
             st.subheader("Word Cloud")
 
-            case_no = st.text_input("Enter Case Number:")
+            case_no = st.text_input(label="judge selection",
+                                    label_visibility="hidden",
+                                    placeholder="Enter case number:")
             if case_no:
                 summary_texts = get_summary_texts_from_db(CONN, case_no)
 

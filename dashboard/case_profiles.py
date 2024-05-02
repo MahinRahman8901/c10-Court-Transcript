@@ -21,7 +21,9 @@ def get_db_connection(config) -> connect:
 def get_case_query() -> st.text_input:
     """Returns a Streamlit input box that catches a queried case by name or number"""
 
-    return st.text_input(label="Enter a case name/no.")
+    return st.text_input(label="case search",
+                         label_visibility="hidden",
+                         placeholder="Enter a case name/no.")
 
 
 def get_case_information_by_name(conn, case_name):
