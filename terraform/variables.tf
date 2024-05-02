@@ -62,7 +62,7 @@ variable "SUBNET_GROUP" {
   type = string
 }
 
-variable "VPC_GROUP" {
+variable "VPC_ID" {
   type = string
   sensitive = true
 }

@@ -11,11 +11,11 @@ data "aws_db_subnet_group" "public_subnet_group" {
 }
 
 data "aws_vpc" "cohort_10_vpc" {
-    id = var.VPC_GROUP
+    id = var.VPC_ID
 }
 
 data "aws_ecs_cluster" "c10-ecs-cluster" {
-    cluster_name = var.VPC_GROUP
+    cluster_name = var.ECS_CLUSTER
 }
 
 data "aws_iam_role" "execution-role" {

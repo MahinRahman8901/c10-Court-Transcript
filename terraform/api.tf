@@ -10,6 +10,13 @@ resource "aws_security_group" "court-api-sec-group" {
         to_port           = 5000
     }
 
+  ingress {
+        cidr_blocks       = ["0.0.0.0/0"]
+        from_port         = 80
+        protocol          = "tcp"
+        to_port           = 80
+    }
+
   egress {
     from_port        = 0
     to_port          = 0
@@ -85,12 +92,46 @@ resource "aws_ecs_task_definition" "court-api-task-def" {
   ])
 }
 
+resource "aws_alb" "court_api_alb" {
+  name               = "c10-court-api-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.court-api-sec-group.id]
+  subnets            = ["subnet-0f1bc89d0670672b5", "subnet-010c8f9ace38ac103", "subnet-05a01546985e339a6"]
+}
+
+resource "aws_alb_listener" "court_front_end" {
+  load_balancer_arn = aws_alb.court_api_alb.arn
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.alb-court-api-tg.arn
+    type             = "forward"
+  }
+}
+
+resource "aws_alb_target_group" "alb-court-api-tg" {
+  name        = "c10-court-api-lb-alb-tg"
+  port        = 5000
+  protocol    = "HTTP"
+  vpc_id      = var.VPC_ID
+  target_type = "ip"
+}
+
 resource "aws_ecs_service" "court-api-service" {
     name = "c10-court-api-service"
     cluster = data.aws_ecs_cluster.c10-ecs-cluster.cluster_name
     task_definition = aws_ecs_task_definition.court-api-task-def.arn
     desired_count = 1
     launch_type = "FARGATE"
+
+    load_balancer {
+      target_group_arn = aws_alb_target_group.alb-court-api-tg.arn
+      container_name = "court-api"
+      container_port = 5000
+    }
+    
     network_configuration {
       subnets = ["subnet-0f1bc89d0670672b5", "subnet-010c8f9ace38ac103", "subnet-05a01546985e339a6"]
       security_groups = [aws_security_group.court-api-sec-group.id]
