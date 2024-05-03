@@ -119,7 +119,7 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ![DASHBOARD](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Screenshot%202024-05-02%20at%2016.13.26.png?raw=true)
 
-Access Our Dashboard via: http://c10-court-dashboard-alb-309522451.eu-west-2.elb.amazonaws.com
+Access Our Dashboard via: http://c10-court-dashboard-alb-559509706.eu-west-2.elb.amazonaws.com/
 
 You can also run it locally: `streamlit run streamlit_app.py` 
 ### Features
