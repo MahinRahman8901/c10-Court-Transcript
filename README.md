@@ -119,6 +119,9 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ![DASHBOARD](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Screenshot%202024-05-02%20at%2016.13.26.png?raw=true)
 
+Access Our Dashboard via: http://c10-court-dashboard-alb-309522451.eu-west-2.elb.amazonaws.com
+
+You can also run it locally: `streamlit run streamlit_app.py` 
 ### Features
 - **View Judges & Their Cases:** Can use the dropdown to view all the judges and the case information they are working on.
 - **Various Graphs:** Can look through the various graphs and read the metrics, this will allow the user to gauge a better idea of the cases.
@@ -135,7 +138,7 @@ For this, we have a `seed.sh` which runs the `seeds.sql` script into the databas
 
 ![API HOME](https://github.com/MahinRahman8901/c10-Court-Transcript/blob/main/pics/Screenshot%202024-05-02%20at%2016.16.45.png?raw=true)
 
-Access to API via ECS: http://3.8.5.146:5000
+Access to API via ECS: : http://c10-court-api-alb-767841739.eu-west-2.elb.amazonaws.com/
 
 ### Features
 - **View Endpoints:** On the route page you are able to view all the endpoints and filters, as well as what each one does.
