@@ -36,15 +36,6 @@ def get_stored_titles(conn) -> list:
     return [row["title"] for row in result]
 
 
-def get_index_to_infinity():
-    """Get index to infinity."""
-
-    index = 1
-    while True:
-        yield index
-        index += 1
-
-
 def scrape_law_case_urls(web_url: str) -> list[str]:
     """Get the url for each case on the courts webpage."""
 

@@ -223,7 +223,7 @@ def get_summary_texts_from_db(conn, case_no):
 
 
 def standardise_verdicts(verdict: str) -> str:
-    '''Standardises a verdict to return either 'Claimant' or 'Defendant.'''
+    '''Standardises a verdict to return either 'Claimant' or 'Defendant'.'''
 
     if 'claimant' in verdict.lower():
         return 'Claimant'

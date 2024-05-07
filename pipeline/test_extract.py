@@ -3,7 +3,7 @@ from os import environ as ENV
 
 from bs4 import BeautifulSoup
 
-from extract import create_dataframe, combine_case_url, get_index_to_infinity, get_case_pdf_url, get_case_title
+from extract import create_dataframe, combine_case_url, get_case_pdf_url, get_case_title
 
 """
 Testing create_dataframe
@@ -48,21 +48,6 @@ def test_combine_case_url_returns_correct_url():
     urls = ["fizz"]
     case_urls = combine_case_url(urls)
     assert case_urls[0] == "real.url/fizz"
-
-
-"""
-Testing get_index_to_infinity
-"""
-
-
-def test_get_index_to_infinity():
-    """Tests that the generator function yields incrementally by 1."""
-
-    indexes = get_index_to_infinity()
-    first = next(indexes)
-    second = next(indexes)
-    assert first == 1
-    assert second == 2
 
 
 """
