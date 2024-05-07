@@ -334,3 +334,5 @@ if __name__ == "__main__":
             else:
                 st.warning(
                     "No summary text found in the database for the entered case number.")
+
+    CONN.close()
