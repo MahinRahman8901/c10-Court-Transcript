@@ -7,3 +7,4 @@ altair
 pywaffle
 wordcloud
 streamlit
+st_pages

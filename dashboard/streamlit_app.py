@@ -1,13 +1,14 @@
-import streamlit as st
-import matplotlib.pyplot as plt
 from os import environ as ENV
 import re
 from datetime import datetime, timezone, timedelta
 from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from psycopg2 import connect
+import streamlit as st
+from st_pages import Page, show_pages
 import pandas as pd
 import altair as alt
+import matplotlib.pyplot as plt
 from pywaffle import Waffle
 
 from layout import set_page_config, get_sidebar
@@ -255,10 +256,18 @@ if __name__ == "__main__":
 
     get_sidebar()
 
+    show_pages(
+        [
+            Page("streamlit_app.py", "Searches", "🔍"),
+            Page("pages/1_Charts.py", "Charts", "📈")
+        ]
+    )
+
     data = get_data_from_db(CONN)
 
-    profiles, visualizations = st.columns([.3, .7], gap="medium")
-    with profiles:
+    searches = st.columns([.35, .35, .3])
+
+    with searches[0]:
         st.subheader(body="Judge Search", divider="grey")
         judge_profile_selection = get_judge_selection(
             CONN, "judge_profile_selection")
@@ -273,6 +282,7 @@ if __name__ == "__main__":
         else:
             st.write("*(no judge selected)*")
 
+    with searches[1]:
         st.subheader(body="Case Search", divider="grey")
         case_search = get_case_query()
 
@@ -304,78 +314,23 @@ if __name__ == "__main__":
         else:
             pass
 
-    with visualizations:
-        data = get_data_from_db(CONN)
+    with searches[2]:
+        st.subheader("Word Cloud", divider="grey")
 
-        # controls/filters (may need columns to organize the controls)
-        controls = st.columns(5)
-        with controls[0]:
-            viz_type_selection = get_judge_type_selection(
-                CONN, "viz_type_selection")
-        with controls[1]:
-            viz_circuit_selection = get_circuit_selection(
-                CONN, "viz_circuit_selection")
-        with controls[2]:
-            viz_gender_selection = get_gender_selection(
-                CONN, "viz_gender_selection")
-        with controls[3]:
-            viz_date_selection = get_date_selection(
-                "viz_date_selection")
-        with controls[4]:
-            viz_judge_selection = get_judge_selection(
-                CONN, "viz_judge_selectbox")
-        inputs = compile_inputs_as_dict(CONN, viz_type_selection, viz_circuit_selection,
-                                        viz_gender_selection, viz_date_selection, viz_judge_selection)
-        filtered_data = get_filtered_data(data, inputs)
+        case_no = st.text_input(label="judge selection",
+                                label_visibility="hidden",
+                                placeholder="Enter case number:")
+        if case_no:
+            summary_texts = get_summary_texts_from_db(CONN, case_no)
 
-        first_row = st.columns(2)
-        with first_row[0]:
-            st.subheader(
-                "Verdict Proportions")
-            if isinstance(filtered_data, str):
-                st.write(filtered_data)
+            if summary_texts:
+                word_cloud = generate_word_cloud(summary_texts)
+                background_color = '#0e1117'
+                plt.figure(figsize=(20, 10), facecolor=background_color)
+                plt.imshow(word_cloud)
+                plt.axis("off")
+                plt.tight_layout(pad=0)
+                st.pyplot()
             else:
-                st.pyplot(get_waffle_chart(filtered_data))
-
-        with first_row[1]:
-
-            st.subheader("Verdicts By Circuit")
-            st.altair_chart(get_verdicts_stacked_bar_chart(data))
-
-        second_row = st. columns(2)
-        with second_row[1]:
-            st.subheader("Word Cloud")
-
-            case_no = st.text_input(label="judge selection",
-                                    label_visibility="hidden",
-                                    placeholder="Enter case number:")
-            if case_no:
-                summary_texts = get_summary_texts_from_db(CONN, case_no)
-
-                if summary_texts:
-                    word_cloud = generate_word_cloud(summary_texts)
-                    background_color = '#0e1117'
-                    plt.figure(figsize=(20, 10), facecolor=background_color)
-                    plt.imshow(word_cloud)
-                    plt.axis("off")
-                    plt.tight_layout(pad=0)
-                    st.pyplot()
-                else:
-                    st.warning(
-                        "No summary text found in the database for the entered case number.")
-
-        with second_row[0]:
-            st.subheader("Judge Gender Split")
-            if isinstance(filtered_data, str):
-                st.write(filtered_data)
-            else:
-                st.altair_chart(get_gender_donut_chart(filtered_data))
-
-        third_row = st.columns(2)
-        with third_row[0]:
-            st.subheader("Case Count / Time")
-            st.altair_chart(get_case_count_line_chart(CONN))
-
-        with third_row[1]:
-            st.subheader("Case Count / Time")
-            st.altair_chart(get_judge_count_line_chart(CONN))
+                st.warning(
+                    "No summary text found in the database for the entered case number.")
