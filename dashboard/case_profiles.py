@@ -23,7 +23,7 @@ def get_case_query() -> st.text_input:
 
     return st.text_input(label="case search",
                          label_visibility="hidden",
-                         placeholder="Enter a case name/no.")
+                         placeholder="Enter a case name/no.:")
 
 
 def get_case_information_by_name(conn, case_name):

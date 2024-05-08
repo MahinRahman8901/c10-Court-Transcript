@@ -39,7 +39,7 @@ def extract_id_from_string(string: str) -> int:
 
 
 # ========== FUNCTIONS: SELECTIONS ==========
-def get_judge_selection(conn: connect, key: str) -> st.selectbox:
+def get_judge_selection(conn: connect, key: str, placeholder: str) -> st.selectbox:
     """Returns a Streamlit selectbox for individual judges."""
 
     with conn.cursor() as cur:
@@ -53,7 +53,7 @@ def get_judge_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["judge"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="name",
+                                   placeholder=placeholder,
                                    options=rows,
                                    index=None,
                                    label="judge selection",
@@ -270,7 +270,7 @@ if __name__ == "__main__":
     with searches[0]:
         st.subheader(body="Judge Search", divider="grey")
         judge_profile_selection = get_judge_selection(
-            CONN, "judge_profile_selection")
+            CONN, "judge_profile_selection", "Enter judge name:")
         if judge_profile_selection:
             id = extract_id_from_string(judge_profile_selection)
             judge, cases = get_judge_from_db(CONN, id)
@@ -280,7 +280,8 @@ if __name__ == "__main__":
                 st.dataframe(cases, hide_index=True,
                              use_container_width=True)
         else:
-            st.write("*(no judge selected)*")
+            pass
+            # st.write("*(no judge selected)*")
 
     with searches[1]:
         st.subheader(body="Case Search", divider="grey")
