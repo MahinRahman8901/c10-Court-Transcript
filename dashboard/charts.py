@@ -132,6 +132,21 @@ def get_waffle_chart(data: pd.DataFrame):
     return fig
 
 
+def get_waffle_metrics(data: pd.DataFrame):
+    """Returns a metric that shows the verdicts which ruled in favour of claimant vs defendant"""
+
+    claimants = len(data[data['verdict'].str.lower().str.contains('claimant')])
+    defendants = len(
+        data[data['verdict'].str.lower().str.contains('defendant')])
+
+    claimant_wins = str(
+        round(claimants / (claimants + defendants), 1)*100) + '%'
+    defendant_wins = str(
+        round(defendants / (claimants + defendants), 1)*100) + '%'
+
+    return claimant_wins, defendant_wins
+
+
 def get_judge_count_line_chart(conn: connect) -> alt.Chart:
     '''Returns the line graph for judge appointment count over time.'''
 
