@@ -7,6 +7,7 @@ from charts import (get_db_connection,
                     get_filtered_data,
                     get_gender_donut_chart,
                     get_waffle_chart,
+                    get_waffle_metrics,
                     get_judge_count_line_chart,
                     get_verdicts_stacked_bar_chart,
                     get_case_count_line_chart)
@@ -17,6 +18,8 @@ CONN = get_db_connection(ENV)
 set_page_config()
 
 get_sidebar()
+
+st.title("Court Dashboard")
 
 data = get_data_from_db(CONN)
 
@@ -36,32 +39,41 @@ with controls[3]:
         "viz_date_selection")
 with controls[4]:
     viz_judge_selection = get_judge_selection(
-        CONN, "viz_judge_selectbox")
+        CONN, "viz_judge_selectbox", "name")
 inputs = compile_inputs_as_dict(CONN, viz_type_selection, viz_circuit_selection,
                                 viz_gender_selection, viz_date_selection, viz_judge_selection)
 filtered_data = get_filtered_data(data, inputs)
 
-row_1 = st.columns(3, gap="large")
+row_1 = st.columns(3, gap="medium")
 with row_1[0]:
+    st.subheader("Verdicts By Circuit")
+    st.altair_chart(get_verdicts_stacked_bar_chart(
+        data), use_container_width=True)
+
+with row_1[1]:
     st.subheader(
         "Verdict Proportions")
     if isinstance(filtered_data, str):
         st.write(filtered_data)
     else:
-        st.pyplot(get_waffle_chart(filtered_data))
-
-with row_1[1]:
-    st.subheader("Verdicts By Circuit")
-    st.altair_chart(get_verdicts_stacked_bar_chart(data))
+        st.pyplot(get_waffle_chart(filtered_data), use_container_width=True)
+        claimant_wins, defendant_wins = get_waffle_metrics(filtered_data)
+        # st.write("In favour of:")
+        verdict_metrics = st.columns(2)
+        with verdict_metrics[0]:
+            st.metric("Claimant", claimant_wins)
+        with verdict_metrics[1]:
+            st.metric("Defendant", defendant_wins)
 
 with row_1[2]:
     st.subheader("Judge Gender Split")
     if isinstance(filtered_data, str):
         st.write(filtered_data)
     else:
-        st.altair_chart(get_gender_donut_chart(filtered_data))
+        st.altair_chart(get_gender_donut_chart(
+            filtered_data), use_container_width=True)
 
-row_2 = st. columns(2)
+row_2 = st. columns(2, gap="medium")
 with row_2[0]:
     st.subheader("Case Count / Time")
     st.altair_chart(get_case_count_line_chart(CONN), use_container_width=True)

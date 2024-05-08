@@ -38,8 +38,44 @@ def extract_id_from_string(string: str) -> int:
     return None
 
 
+# ========== FUNCTIONS: METRICS ==========
+def get_metric_judge(conn: connect):
+    """Returns total count of judges in database as a Streamlit metric."""
+
+    with conn.cursor() as cur:
+        query = """SELECT COUNT(judge_id) FROM judge"""
+        cur.execute(query)
+        count = cur.fetchone()["count"]
+
+    return count
+
+
+def get_metric_case(conn: connect):
+    """Returns total count of cases in database as a Streamlit metric."""
+
+    with conn.cursor() as cur:
+        query = """SELECT COUNT(DISTINCT case_no) FROM transcript"""
+        cur.execute(query)
+        count = cur.fetchone()["count"]
+
+    return count
+
+
+def get_metric_transcript(conn: connect):
+    """Returns total count of transcripts in database as a Streamlit metric."""
+
+    with conn.cursor() as cur:
+        query = """SELECT COUNT(transcript_id) FROM transcript"""
+        cur.execute(query)
+        count = cur.fetchone()["count"]
+
+    return count
+
+
 # ========== FUNCTIONS: SELECTIONS ==========
-def get_judge_selection(conn: connect, key: str) -> st.selectbox:
+
+
+def get_judge_selection(conn: connect, key: str, placeholder: str) -> st.selectbox:
     """Returns a Streamlit selectbox for individual judges."""
 
     with conn.cursor() as cur:
@@ -53,7 +89,7 @@ def get_judge_selection(conn: connect, key: str) -> st.selectbox:
     rows = [item["judge"] for item in rows]
 
     judge_selection = st.selectbox(key=key,
-                                   placeholder="name",
+                                   placeholder=placeholder,
                                    options=rows,
                                    index=None,
                                    label="judge selection",
@@ -263,14 +299,24 @@ if __name__ == "__main__":
         ]
     )
 
+    top_row = st.columns([.4, .2, .2, .2])
+    with top_row[0]:
+        st.title("Court Dashboard")
+    with top_row[1]:
+        st.metric("**total judge count**", get_metric_judge(CONN))
+    with top_row[2]:
+        st.metric("**total case count**", get_metric_case(CONN))
+    with top_row[3]:
+        st.metric("**total transcript count**", get_metric_transcript(CONN))
+
     data = get_data_from_db(CONN)
 
-    searches = st.columns([.35, .35, .3])
+    searches = st.columns([.35, .35, .3], gap="medium")
 
     with searches[0]:
         st.subheader(body="Judge Search", divider="grey")
         judge_profile_selection = get_judge_selection(
-            CONN, "judge_profile_selection")
+            CONN, "judge_profile_selection", "Enter judge name:")
         if judge_profile_selection:
             id = extract_id_from_string(judge_profile_selection)
             judge, cases = get_judge_from_db(CONN, id)
@@ -280,7 +326,8 @@ if __name__ == "__main__":
                 st.dataframe(cases, hide_index=True,
                              use_container_width=True)
         else:
-            st.write("*(no judge selected)*")
+            pass
+            # st.write("*(no judge selected)*")
 
     with searches[1]:
         st.subheader(body="Case Search", divider="grey")
