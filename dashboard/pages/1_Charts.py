@@ -7,6 +7,7 @@ from charts import (get_db_connection,
                     get_filtered_data,
                     get_gender_donut_chart,
                     get_waffle_chart,
+                    get_waffle_metrics,
                     get_judge_count_line_chart,
                     get_verdicts_stacked_bar_chart,
                     get_case_count_line_chart)
@@ -49,6 +50,10 @@ with row_1[0]:
         st.write(filtered_data)
     else:
         st.pyplot(get_waffle_chart(filtered_data))
+        claimant_wins, defendant_wins = get_waffle_metrics(filtered_data)
+        st.write("In favour of:")
+        st.metric("Claimant", claimant_wins)
+        st.metric("Defendant", defendant_wins)
 
 with row_1[1]:
     st.subheader("Verdicts By Circuit")
