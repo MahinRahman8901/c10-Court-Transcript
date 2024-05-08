@@ -19,6 +19,8 @@ set_page_config()
 
 get_sidebar()
 
+st.title("Court Dashboard")
+
 data = get_data_from_db(CONN)
 
 # controls/filters (may need columns to organize the controls)

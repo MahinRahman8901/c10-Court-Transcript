@@ -8,8 +8,6 @@ def set_page_config():
     st.set_page_config(page_title="Arelm Court Dashboard", page_icon="🏛", layout="wide",
                        initial_sidebar_state="expanded", menu_items=None)
 
-    st.title("Court Dashboard")
-
 
 def get_sidebar():
     '''This function programs a streamlit sidebar.'''
